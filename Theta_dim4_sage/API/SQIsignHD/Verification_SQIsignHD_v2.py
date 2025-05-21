@@ -3,10 +3,14 @@ proof.all(False)
 
 import linecache
 #from Cryptodome.Hash import SHAKE256
+from time import time
 
-from utilities.basis_from_hints import torsion_basis_2f_from_hint
-from utilities.discrete_log import weil_pairing_pari, discrete_log_pari
-from montgomery_isogenies.isogenies_x_only import isogeny_from_scalar_x_only, evaluate_isogeny_x_only
+from ...utilities.basis_from_hints import torsion_basis_2f_from_hint
+from ...utilities.discrete_log import weil_pairing_pari, discrete_log_pari
+from ...montgomery_isogenies.isogenies_x_only import isogeny_from_scalar_x_only, evaluate_isogeny_x_only
+from ...theta_structures.Tuple_point import TuplePoint
+from ...isogenies.Kani_endomorphism import KaniEndoHalf
+from ...utilities.strategy import precompute_strategy_with_first_eval
 
 public_params = {1:{'p':5*2**248-1,'c':5,'e':248},3:{'p':65*2**376-1,'c':65,'e':376},5:{'p':27*2**500-1,'c':27,'e':500}}
 
@@ -32,6 +36,7 @@ class SQIsignHD:
 		self.n_bytes = 2*self.lamb//8
 		self.f = self.lamb + ceil(log(2*self.lamb)/log(2))
 		self.r = ceil(self.f/2)+2
+		self.Q0 = BinaryQF([1,0,1])
 
 
 	def read_gf_table(self,file):
@@ -155,7 +160,7 @@ class SQIsignHD_verif:
 		self.P_chal, self.Q_chal = torsion_basis_2f_from_hint(self.E_chal,self.h_chal_P,self.h_chal_Q,self.params.NQR_TABLE,self.params.Z_NQR_TABLE)
 
 	def image_response(self):
-		rescale = ZZ(22**(self.params.e-self.params.r))
+		rescale = ZZ(2**(self.params.e-self.params.r))
 		R_com = rescale*self.P_com
 		S_com = rescale*self.Q_com
 		R_chal = rescale*self.P_chal
@@ -173,18 +178,106 @@ class SQIsignHD_verif:
 		else:
 			self.d = self.c_or_d
 			self.c = (inverse_mod(ZZ(self.b),order)*(self.a*self.d-k*self.q))%order
+
+		self.R_com = R_com
+		self.S_com = S_com
 		self.phi_rsp_R_com = self.a*R_chal + self.b*S_chal
 		self.phi_rsp_S_com = self.c*R_chal + self.d*S_chal
 
+	def compute_HD(self):
+		N = 2**self.params.f-self.q
+		assert is_prime(N)&(N%4==1)
+		a1, a2 = self.params.Q0.solve_integer(N)
 
+		# Strategies
+		m=0
+		if a2%2==0:
+			ai_div=a2
+		else:
+			ai_div=a1
+		while ai_div%2==0:
+			m+=1
+			ai_div=ai_div//2
+
+		e1=ceil(self.params.f/2)
+		e2=self.params.f-e1
+
+		strategy1=precompute_strategy_with_first_eval(e1,m,M=1,S=0.8,I=100)
+		if e2==e1:
+			strategy2=strategy1
+		else:
+			strategy2=precompute_strategy_with_first_eval(e2,m,M=1,S=0.8,I=100)
+
+		self.F = KaniEndoHalf(self.R_com,self.S_com,self.phi_rsp_R_com,self.phi_rsp_S_com,
+			self.q,a1,a2,self.params.f,self.params.r,strategy1,strategy2)
+
+		self.a1, self.a2 = a1, a2
+
+	def verify_middle_codomain(self):
+		C1=self.F.F1._isogenies[-1]._codomain
+		C2=self.F.F2_dual._isogenies[-1]._codomain
+		HC2=C2.hadamard()
+
+		return C1.zero()==HC2.zero()
+
+	def verify_HD_image(self):
+		T=TuplePoint(self.P_com,self.E_com(0),self.E_chal(0),self.E_chal(0))
+		FT=self.F(T)
+
+		a1P_com = self.a1*self.P_com
+		a2P_com = self.a2*self.P_com
+
+		return ((FT[0]==a1P_com)|(FT[0]==-a1P_com))&((FT[1]==a2P_com)|(FT[1]==-a2P_com))&(FT[3]==self.E_chal(0))
+
+	def verify(self):
+		print("\nStarting verification:")
+		t0 = time()
+		self.recover_pk_and_com()
+		t1 = time()
+		print("Commitment and public key basis generation time {} s".format(t1-t0))
+		t1 = time()
+		self.recover_chal()
+		t2 = time()
+		print("Challenge and challenge basis computation time {} s".format(t2-t1))
+		t2 = time()
+		self.image_response()
+		t3 = time()
+		print("Response image recovery time {} s".format(t3-t2))
+		t3 = time()
+		self.compute_HD()
+		t4 = time()
+		print("4-dimensional isogeny computation time {} s".format(t4-t3))
+		t5 = time()
+		matching_codomain = self.verify_middle_codomain()
+		t6 = time()
+		print("Do F1 and F2_dual have the same codomain?\n{}".format(matching_codomain))
+		print("Codomain matching verification time {} s".format(t6-t5))
+		t6 = time()
+		correct_image = self.verify_HD_image()
+		t7 = time()
+		print("Is the point evaluation correct ?\n{}".format(correct_image))
+		print("Time image verification {} s".format(t7-t6))
+		print("\nEnd verification. Total verification time {} s\n".format(t7-t0))
+
+		return matching_codomain&correct_image
 
 if __name__=="__main__":
-	pp = SQIsignHD(1)
-		
-	for i in range(100):
-		print(i)
+	pp = SQIsignHD(3)
+	test = True
+	dt = 0
+	n_test = 100
+	for i in range(n_test):
+		print("Verifying response number {}".format(i))
 		verif = SQIsignHD_verif(pp,i)
-		verif.recover_pk_and_com()
-		verif.recover_chal()
-		verif.image_response()
+		t0 = time()
+		test = test&verif.verify()
+		t1 = time()
+		dt += t1-t0
+
+	if test:
+		print("\nAll tests passed.")
+		print("\nAverage verification time {} s".format(dt/n_test))
+	else:
+		print("\nError: some tests failed.")
+		print("\nAverage verification time {} s".format(dt/n_test))
 		

@@ -1,14 +1,14 @@
 from sage.all import *
-from SIDH.parameter_generation import read_params_SIKE
-from utilities.supersingular import torsion_basis, weil_pairing_pari
-from utilities.discrete_log import ell_discrete_log_pari #discrete_log_pari
-from utilities.order import has_order_D
-from montgomery_isogenies.isogenies_x_only import isogeny_from_scalar_x_only, evaluate_isogeny_x_only, random_isogeny_x_only
-from basis_change.canonical_basis_dim1 import make_canonical
+from pkg.SIDH.parameter_generation import read_params_SIKE
+from pkg.utilities.supersingular import torsion_basis, weil_pairing_pari
+from pkg.utilities.discrete_log import ell_discrete_log_pari #discrete_log_pari
+from pkg.utilities.order import has_order_D
+from pkg.montgomery_isogenies.isogenies_x_only import isogeny_from_scalar_x_only, evaluate_isogeny_x_only, random_isogeny_x_only
+from pkg.basis_change.canonical_basis_dim1 import make_canonical
 from Tests import random_walk
-from utilities.strategy import precompute_strategy_with_first_eval
-from isogenies.Kani_endomorphism import KaniEndoHalf
-from theta_structures.Tuple_point import TuplePoint
+from pkg.utilities.strategy import precompute_strategy_with_first_eval
+from pkg.isogenies.Kani_endomorphism import KaniEndoHalf
+from pkg.theta_structures.Tuple_point import TuplePoint
 from time import time
 
 # CLI imports
@@ -212,7 +212,7 @@ def SIDH_key_recovery_attack(params,pub_params,pubA,pubB,EAB=None):
 	return EABp
 
 if __name__=="__main__":
-	d_params=read_params_SIKE('SIDH/parameters_SIKE_NIST.txt')
+	d_params=read_params_SIKE('pkg/SIDH/parameters_SIKE_NIST.txt')
 
 	parser = argparse.ArgumentParser()
 
@@ -234,7 +234,7 @@ if __name__=="__main__":
 			print("Prime SIKE {}=2**{}*3**{}-1".format(x,d_params[x]['e2'],d_params[x]['e3']))
 	elif args.Protocol:
 		x=args.p
-		print("Attack on SIDH with {}=2**{}*3**{}-1\n".format(x,d_params[x]['e2'],d_params[x]['e3']))
+		print("SIDH protocol with {}=2**{}*3**{}-1\n".format(x,d_params[x]['e2'],d_params[x]['e3']))
 
 		pub_params,pubA,pubB,EAB=SIDH_key_exchange(d_params[x])
 	elif args.Protocol_and_Attack:

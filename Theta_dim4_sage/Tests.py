@@ -1,14 +1,14 @@
 from sage.all import *
-from sage.schemes.elliptic_curves.hom_composite import EllipticCurveHom_composite
+#from sage.schemes.elliptic_curves.hom_composite import EllipticCurveHom_composite
 from time import time
 
-from parameters.parameter_generation import read_params, find_param, find_param_gen, save_params
-from utilities.supersingular import random_point, compute_point_order_D, torsion_basis
-from isogenies.Kani_endomorphism import KaniEndo, KaniEndoHalf
-from theta_structures.Tuple_point import TuplePoint
-from montgomery_isogenies.isogenies_x_only import isogeny_from_scalar_x_only, evaluate_isogeny_x_only
-from basis_change.canonical_basis_dim1 import make_canonical
-from utilities.strategy import precompute_strategy_with_first_eval#, precompute_strategy_with_first_eval_and_splitting
+from pkg.parameters.parameter_generation import read_params, find_param, find_param_gen, save_params
+from pkg.utilities.supersingular import random_point, compute_point_order_D, torsion_basis
+from pkg.isogenies.Kani_endomorphism import KaniEndo, KaniEndoHalf
+from pkg.theta_structures.Tuple_point import TuplePoint
+from pkg.montgomery_isogenies.isogenies_x_only import isogeny_from_scalar_x_only, evaluate_isogeny_x_only
+from pkg.basis_change.canonical_basis_dim1 import make_canonical
+from pkg.utilities.strategy import precompute_strategy_with_first_eval#, precompute_strategy_with_first_eval_and_splitting
 
 # CLI imports
 import argparse
@@ -16,7 +16,7 @@ from pathlib import Path
 
 
 ## Retrieving parameter files
-target_dir=Path("parameters")
+target_dir=Path("pkg/parameters")
 
 # Dictionnary of list of params indexed by l_B (3 or 7)
 d_L_params={}
