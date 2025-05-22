@@ -1,6 +1,10 @@
 # Theta_dim4 sagemath library
 
-This library is a `python/sagemath` implementation of 4-dimensional 2-isogeny computations with the Theta model. Only chains of 2-isogenies and Theta models of level 2 are implemented. The library is suited to the computation of isogenies between products of elliptic curves given by Kani's lemma, especially in the context of SQISignHD verification. We recover isogenies in dimension 1 given their evaluation on torsion points. Hence, the library can also be used to test SIDH attacks. Finally, this library also contains subroutines for effective group actions in the CSIDH context using 4-dimensional isogenies, as described in the PEGASIS paper [4]. Nonetheless, the PEGASIS API is neither in this repository nor documented here. We refer to https://github.com/pegasis4d/pegasis.
+This library is a `python/sagemath` implementation of 4-dimensional 2-isogeny computations with the Theta model based on [2]. Only chains of 2-isogenies and Theta models of level 2 are implemented. 
+
+Copyright (c) 2024, Pierrick Dartois.
+
+The library is suited to the computation of isogenies between products of elliptic curves given by Kani's lemma, especially in the context of SIDH attacks and SQISignHD verification. We recover isogenies in dimension 1 given their evaluation on torsion points. Hence, the library can also be used to test SIDH attacks. Finally, this library also contains subroutines for effective group actions in the CSIDH context using 4-dimensional isogenies, as described in the PEGASIS paper [4]. Nonetheless, the PEGASIS API is neither in this repository nor documented here. We refer to https://github.com/pegasis4d/pegasis.
 
 
 ## Disclaimer
@@ -14,18 +18,18 @@ Note that this library heavily relies on dimension 2 isogeny computations in the
 
 ## Requirement
 
-You should have `python 3` and `sagemath` (version 10 at least) installed on your computer. Instructions to download `sagemath` can be found here https://doc.sagemath.org/html/en/installation/index.html.
+You should have `python 3` and `sagemath` (version 10.0 at least) installed on your computer. Instructions to download `sagemath` can be found here https://doc.sagemath.org/html/en/installation/index.html.
 
 
 ## How to run the code?
 
-Start a terminal and use the `cd` command to locate in the `Verification-sage` directory. From there, you can access two command line interfaces (CLI):
+Start a terminal and use the `cd` command to locate in the `Theta_dim4_sage` directory. From there, you can access two command line interfaces (CLI):
 - `Tests.py` running generic tests on 4-dimensional 2-isogeny chains derived from Kani's lemma;
-- `Verify_SQISignHD.py` to verify real SQISignHD signatures.
+- `SIDH_attack.py` to test attacks against SIDH proposed in [5].
 
 To use the CLI, type:
 
-`sage <Tests.py/Verify_SQISignHD.py> <arguments>`
+`sage <Tests.py/SIDH_attack.py> <arguments>`
 
 More details on the `<arguments>` of each CLI are provided in the following. 
 
@@ -262,128 +266,6 @@ This is exceptionnal and should not happen in larger characteristic.
 ```
 
 
-## Verifying real SQISignHD signatures
-
-The file `Verify_SQISignHD.py` runs the verification of SQISignHD (Alogorithms 4 and 5 of the SQISignHD paper [1]) with real SQISignHD parameters and signatures (at NIST-1 level). Ten signatures have already been saved in the file `SQIsignHD_data/SQISignHD_executions.txt`.
-
-### What does this script do?
-
-Given the kernel of the challenge $\varphi: E_A\longrightarrow E_2$, we compute and evaluate it on the basis $(P_A,Q_A)$ of $E_A[2^f]$ obtained from the data from the signature file. The result $(P_2,Q_2):=(\varphi(P_A),\varphi(Q_A))$ is a basis of $E_2[2^f]$ and we already know the basis $(R_1,R_2):=(\widehat{\sigma}(P_2),\widehat{\sigma}(Q_2))$ from the signature. We can then compute integers $a_1, a_2$ such that $a_1^2+a_2^2+q=2^e$ and compute the embedding $F\in \mbox{End}(E_2^2\times E_1^2)$ of $\widehat{\sigma}$ given by Kani's lemma by decomposing it in two parts $F:=F_2\circ F_1$ as previously. We then evaluate $F(Q,0,0,0)$, where $Q$ is a point of $2^f 3^{f'}$-torsion and check that $F(Q,0,0,0)=([a_1]Q,-[a_2]Q,*,0)$ (up to signs on each component).
-
-### Verifying signatures in the sample
-
-To test all 10 signatures contained in the sample `SQIsignHD_data/SQISignHD_executions.txt`, type:
-
-```
-sage Verify_SQISignHD.py --verify_sample
-```
-
-or in short format:
-
-```
-sage Verify_SQISignHD.py -vs
-```
-
-You can also verify only one signature of index `<value index>` between 0 and 9:
-
-```
-sage Verify_SQISignHD.py -vs -i=0
-```
-
-EXAMPLE:
-```
-% sage Verify_SQISignHD.py --verify_sample
-===============================================================
-Testing 10 instances of SQISignHD verification with parameters:
- - Prime characteristic p = 13 * 2**126 * 3**78 - 1
- - Length of the dimension 4 2-isogeny = 142
- - Used available torsion = 2**73
-===============================================================
-
-Test 1
-Signature data parsing time 0.19607090950012207 s
-Challenge computation time 0.18125009536743164 s
-Endomorphism F=F2*F1 computation time 1.4973571300506592 s
-Do F1 and F2_dual have the same codomain?
-True
-Codomain matching verification time 0.00028967857360839844 s
-Time to find a point of order 2^f*3^fp 0.012469053268432617 s
-Time point evaluation 0.05667710304260254 s
-Is the point evaluation correct ?
-True
-Total verification time 1.754267930984497 s
-
-[...]
-
-Test 10
-Signature data parsing time 0.08100771903991699 s
-Challenge computation time 0.17457008361816406 s
-Endomorphism F=F2*F1 computation time 1.55623197555542 s
-Do F1 and F2_dual have the same codomain?
-True
-Codomain matching verification time 0.00023794174194335938 s
-Time to find a point of order 2^f*3^fp 0.01227712631225586 s
-Time point evaluation 0.0759129524230957 s
-Is the point evaluation correct ?
-True
-Total verification time 1.825559139251709 s
-```
-
-### Verifying a generated signature
-
-Instructions to generate signatures may be found in the `README.md` file of the `Signature` library. We strongly advise to save the generated signature in the `Verification-sage/SQIsignHD_data` subdirectory as instructed in the `Signature/README.md`:
-
-```
-./src/sqisignhd/ref/lvl1/test/sqisign_test_sqisignhd_lvl1 > ../../Verification-sage/SQISignHD_data/<specify file name>.txt
-```
-
-Otherwise, you have to specify a relative path from the `Verification-sage` to verify your signature.
-
-Once, you have generated a signature, you may verify it from `Verification-sage` with the command:
-
-```
-sage Verify_SQISignHD.py --verify_one_signature <path to signature file>
-```
-
-or in short format:
-
-```
-sage Verify_SQISignHD.py -vo <path to signature file>
-```
-
-EXAMPLE:
-```
-% sage Verify_SQISignHD.py --verify_one_signature SQISignHD_data/signature.txt
-===========================================================
-Verifying one SQISignHD signature with parameters:
- - Prime characteristic p = 13 * 2**126 * 3**78 - 1
- - Length of the 4-dimensional 2-isogeny chain = 142
- - Used available torsion = 2**73
-===========================================================
-
-Signature data parsing time 0.20653986930847168 s
-Challenge computation time 0.16781020164489746 s
-Time to compute the strategies 0.0027136802673339844 s
-Endomorphism F=F2*F1 computation time 1.514930248260498 s
-Do F1 and F2_dual have the same codomain?
-True
-Codomain matching verification time 0.00026869773864746094 s
-Time to find a point of order 2^f*3^fp 0.006500244140625 s
-Time point evaluation 0.06669378280639648 s
-Is the point evaluation correct ?
-True
-Total verification time 1.7653708457946777 s
-```
-
-### Implementation restrictions
-
-Note that the implementation is slightly different from the presentation of the article because:
-- We have to recompute the challenge $\varphi: E_A\longrightarrow E_2$ given its kernel.
-- For convenience (since we have to recompute $\varphi$ and push points through $\varphi$), we "embed" in dimension 4 the dual of the signature isogeny $\widehat{\sigma}: E_2\longrightarrow E_1$ instead of $\sigma$ itself.
-- For now, only isogenies of degree $q=\deg(\sigma)$ such that $2^e-q\equiv 5 \mod 8$ are outputted by the signature protocol but our verification procedure should work with any degree $q$ such that $2^e-q\equiv 1 \mod 4$, as specified in the SQISignHD paper [1].
-- Since the code is still experimental, note that signatures are not compressed. In particular, the deterministic basis $(P_A,Q_A)$ of $E_A[2^f]$ is part of the signature and we have more torsion than needed (we have to multiply torsion points by a power of 2).
-
-
 ## SIDH attacks
 
 The file `SIDH_attack.py` runs a full key recovery attack against the Supersingular Isogeny Diffie Hellman (SIDH) key exchange following the approach of [2, § 5.5] for all SIKE NIST primes (p434, p503, p610, p751) and with an arbitrary starting curve $E_1$.
@@ -461,23 +343,23 @@ The results are then saved in the file `Benchmarking_results_SIDH.csv`. Note tha
 
 ## Organization of the library
 
-The main test files `Tests.py` and `Verify_SQIsignHD.py` are located in the main directory `Verification-sage` of this library.
+The main test files `Tests.py`, `Benchmarks.py`, `Tests.py`, `SIDH_attack.py` and `Benchmarks_SIDH.py` are located in the main directory `Theta_dim4_sage` of this library. 
 
-`Verification-sage` contains several subdirectories:
+The main test files all imports functions from a package `pkg` containing several modules:
 - `basis_change` contains code for changing level 2 Theta structures in dimension 2 and 4 useful for the computation of gluing and splitting isogenies (in the beginning and in the end of the chain).
 - `isogenies` contains code to compute 2-isogenies and chains of 2-isogenies in dimension 4 in the Theta model.
 - `isogenies_dim2` contains code to compute 2-isogenies and chains of 2-isogenies in dimension 2 in the Theta model, based on the implementation of [3]. This code is useful for the first steps of dimension 4 2-isogeny chains (involving gluings).
 - `montgomery_isogenies` contains code to compute dimension 1 isogeny on the Kummer line faster than `sagemath` using $x$-only arithmetic. These files are due to Giacomo Pope.
 - `parameters` contains the parameters mentionned in [Generic tests](#Generic).
-- `SQISignHD_data` contains real SQISignHD signatures.
 - `theta_structures` contains code for different models in dimension 1, 2 and 4 and translations between those models (Montgomery model on elliptic curves (dimension 1) or product of elliptic curves, level 2 Theta models in dimensions 1, 2 and 4).
+- `SIDH` contains data and parameters to run the SIDH attacks.
 - `utilities` contains several useful functions to work on supersingular elliptic curves faster than with the `sagemath` generic functions (discrete logarithms, Weil pairings...).
 
 ## License
 
-SQIsignHD is licensed under Apache-2.0. See LICENSE and NOTICE in the root directory.
+`Theta_dim4` is licensed under Apache-2.0. See LICENSE and NOTICE in the root directory.
 
-Third party code is used in this directory (`Verification-sage`):
+Third party code is used in this directory (`Theta_dim4_sage`):
 
 - `montgomery_isogenies`; MIT: "Copyright (c) 2023 Giacomo Pope"
 - `utilities`; "Copyright (c) 2023 Andrea Basso, Luciano Maino and Giacomo Pope"
@@ -485,11 +367,13 @@ Third party code is used in this directory (`Verification-sage`):
 
 ## References
 
-[1] P. Dartois, A. Leroux, D. Robert, and B. Wesolowski. SQIsignHD: New Dimensions in Cryptography. Cryptology ePrint Archive, Paper 2023/436. 2023. url: https://eprint.iacr.org/2023/436.
+[1] Pierrick Dartois, Antonin Leroux, Damien Robert and Benjamin Wesolowski, SQISignHD: New Dimensions in Cryptography, In Advances in Cryptology – EUROCRYPT 2024. https://eprint.iacr.org/2023/436.
 
-[2] P. Dartois. Fast computation of 2-isogenies in dimension 4 with the Theta model and cryptographic applications. In preparation. 2024.
+[2] Pierrick Dartois, Fast computation of 2-isogenies in dimension 4 and cryptographic applications, IACR Cryptology ePrint Archive, Paper 2024/1180, 2024. https://eprint.iacr.org/2024/1180
 
-[3] P. Dartois, L. Maino, G. Pope, and D. Robert. An Algorithmic Approach to (2,2)-isogenies in the Theta Model and Applications to Isogeny-based Cryptography. Cryptology ePrint Archive, Paper 2023/1747. 2023. url: https://eprint.iacr.org/2023/1747.
+[3] Pierrick Dartois, Luciano Maino, Giacomo Pope and Damien Robert, An Algorithmic Approach to (2,2)-isogenies in the Theta Model and Applications to Isogeny-based Cryptography, In Advances in Cryptology – ASIACRYPT 2024. https://eprint.iacr.org/2023/1747.
 
-[4] P. Dartois, J. K. Eriksen, T. B. Fouotsa, A. Herlédan Le Merdy, R. Invernizzi, D. Robert, R. Rueger, F. Vercauteren, B. Wesolowski. PEGASIS: Practical Effective Class Group Action using 4-Dimensional Isogenies. Cryptology ePrint Archive, Paper 2025/401. 2025. url: https://eprint.iacr.org/2025/401.
+[4] Pierrick Dartois, Jonathan Komada Eriksen, Tako Boris Fouotsa, Arthur Herlédan Le Merdy, Riccardo Invernizzi, Damien Robert, Ryan Rueger, Frederik Vercauteren and Benjamin Wesolowski, PEGASIS: Practical Effective Class Group Action using 4-Dimensional Isogenies, IACR Cryptology ePrint Archive, Paper 2025/401, 2025. https://eprint.iacr.org/2025/401.
+
+[5] Damien Robert. Breaking SIDH in polynomial time, In Advances in Cryptology – EUROCRYPT 2023. https://eprint.iacr.org/2022/1038
 
