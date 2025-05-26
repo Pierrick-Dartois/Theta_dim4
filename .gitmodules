@@ -1,0 +1,3 @@
+[submodule "Theta_dim4_C/fiat-crypto"]
+	path = Theta_dim4_C/fiat-crypto
+	url = git@github.com:mit-plv/fiat-crypto.git
