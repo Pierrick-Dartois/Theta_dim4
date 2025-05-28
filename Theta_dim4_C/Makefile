@@ -1,7 +1,8 @@
-CODE_DIR = fiat-crypto
+.PHONY: all
 
-.PHONY: compile_fiat_crypto
+# Compilation of fiat-crypto (if necessary)
 
+FIAT_CRYPTO_DIR = fiat-crypto
 FIAT_CRYPTO_BIN = fiat-crypto/src/ExtractionOcaml/bedrock2_fiat_crypto
 
 ifneq ("$(wildcard $(FIAT_CRYPTO_BIN))","")
@@ -9,13 +10,35 @@ ifneq ("$(wildcard $(FIAT_CRYPTO_BIN))","")
     FIAT_CRYPTO_SCRIPT = 
 else
     MSG_FIAT_CRYPTO = Compiling Fiat-crypto...
-    FIAT_CRYPTO_SCRIPT = $(MAKE) -C $(CODE_DIR) standalone-ocaml
+    FIAT_CRYPTO_SCRIPT = $(MAKE) -C $(FIAT_CRYPTO_DIR) standalone-ocaml
 endif
 
 compile_fiat_crypto:
 	@echo $(MSG_FIAT_CRYPTO)
 	$(FIAT_CRYPTO_SCRIPT)
 
-#all:
-	#@echo $(MSG_FIAT_CRYPTO)
-	#@echo $(FIAT_CRYPTO_SCRIPT)
+# Choice of a prime to use (parameter PNAME=prime_name)
+
+PRIME_CFILE = src/gf/primes/$(PNAME).c
+RADIX = 64
+
+ifeq ("$(wildcard $(PRIME_CFILE))","")
+	ifndef PVAL
+		MSG_PRIME = Undefined prime name PNAME. You should specify its value PVAL=...
+		GF_GEN = 
+	else
+		MSG_PRIME = Undefined prime name. Generating GFp code...
+		GF_GEN = ./fiat-crypto/src/ExtractionOcaml/bedrock2_fiat_crypto word-by-word-montgomery\
+		 --no-wide-int --widen-carry --widen-bytes --split-multiret --no-select \
+		 $(PNAME) $(RADIX) '$(PVAL)' > $(PRIME_CFILE) 
+	endif
+else
+	MSG_PRIME = Prime $(PNAME) is already defined.
+	GF_GEN = 
+endif
+
+gen_gf:
+	@echo $(MSG_PRIME) 
+	$(GF_GEN)
+
+all: compile_fiat_crypto gen_gf
