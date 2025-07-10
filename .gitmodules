@@ -1,3 +1,6 @@
 [submodule "Theta_dim4_C/fiat-crypto"]
 	path = Theta_dim4_C/fiat-crypto
 	url = git@github.com:mit-plv/fiat-crypto.git
+[submodule "Theta_dim4_C/modarith"]
+	path = Theta_dim4_C/modarith
+	url = git@github.com:mcarrickscott/modarith.git
