@@ -210,3 +210,50 @@ def evaluate_isogeny_x_only(phi, P, Q, n, d):
     imP, imQ = lift_image_to_curve(P, Q, ximP, ximQ, n, d)
     
     return imP, imQ
+
+
+def lift_image_to_curve_with_last_pairing(P, Q, ximP, ximQ, n, d):
+    """
+    Given the torsion basis <P, Q> = E[n]
+    and the x-coordinates of the images x(phi(P))
+    and x(phi(P)) of a degree d-isogeny compute 
+    the image of the full points up to an overall sign:
+        ±phi(P), ±phi(Q)
+    """
+    # Lift the points to the curve
+    imPb = ximP.curve_point()
+    imQb = ximQ.curve_point()
+    
+    # Compute two pairings
+    pair_E0 = weil_pairing_pari(P, Q, n)
+    pair_E1 = weil_pairing_pari(imPb, imQb, n)
+    
+    # Correct the sign
+    if pair_E0**d != pair_E1:
+        imQb = -imQb
+
+    return imPb, imQb, pair_E1
+
+def evaluate_isogeny_x_only_with_image_pairing(phi, P, Q, n, d):
+    """
+    Given an x-only isogeny phi degree d, and the torsion basis
+    <P,Q> = E[n], compute the image of the torsion basis up to
+    and overall sign: ±phi(P), ±phi(Q)
+
+    Does this by evaluating KummerPoints with a KummerIsogeny
+    and lifts them back to the curve using the Weil pairing 
+    trick in `lift_image_to_curve`
+    """
+    # Domain of isogeny
+    L0 = phi.domain()
+
+    # Extract x-coordinates from points and convert to KummerPoints
+    xP, xQ = L0(P[0]), L0(Q[0])
+    
+    # Evaluate the isogeny
+    ximP, ximQ = phi(xP), phi(xQ)
+    
+    # Use Weil pairing trick to get y-coordinate back
+    imP, imQ, pair_E1 = lift_image_to_curve_with_last_pairing(P, Q, ximP, ximQ, n, d)
+    
+    return imP, imQ, pair_E1
