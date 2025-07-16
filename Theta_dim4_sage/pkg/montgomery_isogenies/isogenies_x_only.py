@@ -231,6 +231,7 @@ def lift_image_to_curve_with_last_pairing(P, Q, ximP, ximQ, n, d):
     # Correct the sign
     if pair_E0**d != pair_E1:
         imQb = -imQb
+        pair_E1 = 1/pair_E1
 
     return imPb, imQb, pair_E1
 
