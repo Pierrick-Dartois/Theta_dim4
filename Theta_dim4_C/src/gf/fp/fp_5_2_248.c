@@ -544,3 +544,130 @@ static int modcmp(const spint *a, const spint *b) {
   }
   return eq;
 }
+
+
+/******************************************************************************
+API functions calling generated code above
+******************************************************************************/
+
+const digit_t ZERO[NWORDS_FIELD] = {0x0, 0x0, 0x0, 0x0, 0x0};
+
+const digit_t ONE[NWORDS_FIELD] = {0x19, 0x0, 0x0, 0x0, 0x300000000000};
+
+const digit_t TWO_INV[NWORDS_FIELD] = {0xc, 0x0, 0x0, 0x0, 0x400000000000};
+
+const digit_t THREE_INV[NWORDS_FIELD] = {0x555555555555d, 0x2aaaaaaaaaaaa, 0x5555555555555, 0x2aaaaaaaaaaaa, 0x455555555555};
+
+void
+fp_set_small(fp_t *x, const digit_t val)
+{
+    modint((int)val, *x);
+}
+
+void
+fp_mul_small(fp_t *x, const fp_t *a, const uint32_t val)
+{
+    modmli(*a, (int)val, *x);
+}
+
+void
+fp_set_zero(fp_t *x)
+{
+    modzer(*x);
+}
+
+void
+fp_set_one(fp_t *x)
+{
+    modone(*x);
+}
+
+uint32_t
+fp_is_equal(const fp_t *a, const fp_t *b)
+{
+    return -(uint32_t)modcmp(*a, *b);
+}
+
+uint32_t
+fp_is_zero(const fp_t *a)
+{
+    return -(uint32_t)modis0(*a);
+}
+
+void
+fp_copy(fp_t *out, const fp_t *a)
+{
+    modcpy(*a, *out);
+}
+
+void
+fp_cswap(fp_t *a, fp_t *b, uint32_t ctl)
+{
+    modcsw((int)(ctl & 0x1), *a, *b);
+}
+
+void
+fp_add(fp_t *out, const fp_t *a, const fp_t *b)
+{
+    modadd(*a, *b, *out);
+}
+
+void
+fp_sub(fp_t *out, const fp_t *a, const fp_t *b)
+{
+    modsub(*a, *b, *out);
+}
+
+void
+fp_neg(fp_t *out, const fp_t *a)
+{
+    modneg(*a, *out);
+}
+
+void
+fp_sqr(fp_t *out, const fp_t *a)
+{
+    modsqr(*a, *out);
+}
+
+void
+fp_mul(fp_t *out, const fp_t *a, const fp_t *b)
+{
+    modmul(*a, *b, *out);
+}
+
+void
+fp_inv(fp_t *x)
+{
+    modinv(*x, NULL, *x);
+}
+
+uint32_t
+fp_is_square(const fp_t *a)
+{
+    return -(uint32_t)modqr(NULL, *a);
+}
+
+void
+fp_sqrt(fp_t *a)
+{
+    modsqrt(*a, NULL, *a);
+}
+
+void
+fp_half(fp_t *out, const fp_t *a)
+{
+    modmul(TWO_INV, *a, *out);
+}
+
+void
+fp_exp3div4(fp_t *out, const fp_t *a)
+{
+    modpro(*a, *out);
+}
+
+void
+fp_div3(fp_t *out, const fp_t *a)
+{
+    modmul(THREE_INV, *a, *out);
+}

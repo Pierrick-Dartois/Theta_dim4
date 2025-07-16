@@ -79,7 +79,14 @@ def find_embedding_params(e2_max,l,el_max):
 
 	return False
 
-def write_field_file():
+def int_to_montgemery_fp_const(x,p,Nlimbs,Radix):
+	R = 2**(Nlimbs*Radix)
+	el = (x*R)%p
+	vs = [(int(el) >> Radix*i) % 2**Radix for i in range(Nlimbs)]
+	return '{' + ', '.join(map(hex, vs)) + '}'
+
+
+def write_field_file(p):
 	d_word_params = {}
 	file = open("field.c","a+")
 	file.seek(0)
@@ -89,9 +96,18 @@ def write_field_file():
 		L_line = L_file[i][:-1].split(" ")
 		d_word_params[L_line[1]] = int(L_line[2])
 
+	Nlimbs = d_word_params['Nlimbs']
+	Radix = d_word_params['Radix']
+
 	file.write("\n\n/******************************************************************************")
 	file.write("\nAPI functions calling generated code above")
 	file.write("\n******************************************************************************/")
+
+	file.write("\n\nconst digit_t ZERO[NWORDS_FIELD] = "+int_to_montgemery_fp_const(0,p,Nlimbs,Radix)+";")
+	file.write("\n\nconst digit_t ONE[NWORDS_FIELD] = "+int_to_montgemery_fp_const(1,p,Nlimbs,Radix)+";")
+	file.write("\n\nstatic const digit_t TWO_INV[NWORDS_FIELD] = "+int_to_montgemery_fp_const(inverse_mod(2,p),p,Nlimbs,Radix)+";")
+	file.write("\n\nstatic const digit_t THREE_INV[NWORDS_FIELD] = "+int_to_montgemery_fp_const(inverse_mod(3,p),p,Nlimbs,Radix)+";")
+
 
 	file.write("\n\nvoid")
 	file.write("\nfp_set_small(fp_t *x, const digit_t val)")
@@ -207,6 +223,22 @@ def write_field_file():
 	file.write("\n    modmul(THREE_INV, *a, *out);")
 	file.write("\n}")
 
+	file.write("\n\nvoid")
+	file.write("fp_encode(void *dst, const fp_t *a)")
+	file.write("\n{")
+	file.write("\n    modexp(a, dst);")
+	file.write("\n}")
+
+	file.write("\n\nvoid")
+	file.write("fp_decode_reduce(fp_t *d, const void *src, size_t len)")
+	file.write("\n{")
+	file.write("\n    modimp(src,d);")
+	file.write("\n}")
+
+
+
+
+
 
 if __name__=="__main__":
 	parser = argparse.ArgumentParser()
@@ -237,7 +269,7 @@ if __name__=="__main__":
 
 	os.system("python ../modarith/monty.py 64 {}".format(p))
 
-	write_field_file()
+	write_field_file(p)
 
 	os.system("mv field.c ../src/gf/fp/fp_"+args.name+".c")
 	os.system("rm time.c")
