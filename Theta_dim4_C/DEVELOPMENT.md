@@ -8,7 +8,7 @@ The C codebase is inspired from SQIsign NIST round 2 submission https://github.c
 
 ## Functionality
 
-The goal of this library is to compute $2^e$-isogenies of the form 
+The goal of this library is to compute $2^e$-isogenies obtained with Kani's lemma of the form 
 
 $$F:=\left(\begin{matrix} a_1 & a_2 & \widehat{\sigma} & 0 \\ 
 -a_2 & a_1 & 0 & \widehat{\sigma} \\ 
@@ -28,20 +28,89 @@ A minimal copy of this library (with less dependencies and finite fields) could 
 
 - C11-compatible compiler.
 - modarith (https://github.com/mcarrickscott/modarith), a library to automatically generate code for the $\mathbb{F}_p$ arithmetic.
+- sagemath to generate parameters for 
 
-As this library should be able to handle many finite fiels and to allow the user to generate new ones, modarith was included for that purpose.
+As this library should be able to handle many finite fiels and to allow the user to generate new ones, modarith and sagemath were included for that purpose. These dependencies are unnecessary for applications when finite fields are already generated.
 
-## How to run the code? End goal
+## How to run the code? [End goal]
 
 ### Step 1: parameter generation
 
+The library should be able to generate and handle fields of the form $p=c\cdot 2^{e_2}\cdot \ell^{e_\ell}-1$, with $$c$$ small and $\ell$ prime. Note that $e_\ell$ can be zero (as in SQIsignHD).
 
+Parameter generation scripts are located in the precomp_scripts file.
+
+#### Generate a field to test Kani's 4-dimensional embedding
+
+Go to `precomp_scripts` and type:
+
+```sage generate_fp -p=<choice of prime> -name=<name of chosen prime> -test```
+
+The prime `<choice of prime>` must be of the form $p=c\cdot 2^{e_2}\cdot \ell^{e_\ell}-1$ with $e_\ell>0$.
+
+Then the script will generate:
+- a file `src/gf/fp/fp_<name of chosen prime>.c` containing $\mathbb{F}_p$ arithmetic functions for the chosen prime `<choice of prime>`.
+- a file `TODO` parameters $a_1, a_2, f_2, f_\ell$ such that $f_2\leq e_2-2$, $f_\ell\leq e_\ell$ and $a_1^2+a_2^2+\ell^{f_\ell}=2^{f_2}$.
+
+#### Generate a field for other uses
+
+Go to `precomp_scripts` and type:
+
+```sage generate_fp -p=<prime> -name=<prime name>```
+
+The chosen prime `<prime>` must be of the form $p=c\cdot 2^{e_2}\cdot \ell^{e_\ell}-1$ with $e_\ell=0$.
+
+Then the script will generate a file `src/gf/fp/fp_<prime name>.c` containing $\mathbb{F}_p$ arithmetic functions for the chosen prime `<prime>`.
 
 ### Step 2: compilation and use
 
-#### Testing Kani's 4D embedding
+#### Testing Kani's 4-dimensional embedding
+
+Go to `src` and type
+
+```make test pname=<prime name> [options]```
+
+To run the compiled code, type 
+
+```./test_kani_4D_<prime name>```
+
+This code should execute the equivalent `KaniEndo` and `KaniEndoHalf` functions (see `Theta_dim4_sage/README.md`) on the chosen base field indicated by `<prime name>`. The relevant parameters for `<prime name>` should already be generated (e.g. in Step 1).
+
+TODO: define `[options]`.
 
 #### Testing SIDH attacks
+
+Go to `src` and type
+
+```make wreck_SIKE pname=[p434, p503, p610, p751]```
+
+To run the compiled code, type 
+
+```./SIDH_attack_<prime name>```
+
+## Structure of the library [with pending tasks]
+
+The architecture of the library is greatly inspired from SQIsign-NIST-v2 https://github.com/SQIsign/the-sqisign/tree/nist-v2. The modules to be included in `src` are the following:
+
+[Modules from SQIsign-NIST-v2 to include]
+
+- `common`: code called in several files from SQIsign-NIST-v2, including pseudo-random number generators [directly taken from SQIsign-NIST-v2] [TODO].
+- `gf`: finite field arithmetic ($\mathbb{F}_p$ and $\mathbb{F}_{p^2}$) [directly taken from SQIsign-NIST-v2] [IN PROGRESS].
+- `ec`: elliptic curves along with their isogenies and pairings [directly taken from SQIsign-NIST-v2 with additional functions from src.old2 for odd degree isogenies and pairings] [TODO].
+- `dim2`: for 2-dimensional isogenies [copy of `hd` in SQIsign-NIST-v2 with modifications in change of coordinate formulas] [TODO].
+- `mp`: code for multiprecision arithmetic [directly taken from SQIsign-NIST-v2] [TODO].
+- `params`: headers and C files with the parameters (depending on the chosen field) [Same role as `precomp` in SQIsign-NIST-v2] [TODO]. 
+
+[Module(s) to create]
+
+- `dim4`: for 4-dimensional theta structures and isogenies [implementation in C of functions from `Theta_dim4_sage/pkg/[isogenies,basis_change,theta_structures]`] [TODO].
+
+The following main files are to be created in the `src` folder: 
+
+- `kani_4D.c` (referenced in `kani_4D.h`) containing the equivalent of the functions `KaniEndo` and `KaniEndoHalf` from `Theta_dim4_sage/pkg/isogenies/Kani_endomorphism.py` [TODO].
+- `test_kani_4D.c` (including `kani_4D.h`) testing the functions from `kani_4D.c` [TODO].
+- `SIDH_attack.c` (including `kani_4D.h`) containing the SIDH attack code [TODO].
+
 
 
 
