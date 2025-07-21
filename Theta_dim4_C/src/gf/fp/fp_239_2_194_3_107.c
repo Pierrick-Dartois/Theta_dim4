@@ -793,6 +793,14 @@ static int modcmp(const spint *a, const spint *b) {
 API functions calling generated code above
 ******************************************************************************/
 
+const digit_t ZERO[NWORDS_FIELD] = {0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0};
+
+const digit_t ONE[NWORDS_FIELD] = {0x5b, 0x0, 0x0, 0x35c4900000000, 0xf165e116490bc, 0x22fffe62ae52e0, 0x3fc4104dea0};
+
+static const digit_t TWO_INV[NWORDS_FIELD] = {0x2d, 0x0, 0x0, 0x13f28f00000000, 0x1a732613da8576, 0x22e3dd718066df, 0x5bfe25c754c5};
+
+static const digit_t THREE_INV[NWORDS_FIELD] = {0x15555555555573, 0x15555555555555, 0x15555555555555, 0x424a655555555, 0x8e768bf572c5f, 0x22da7d211bc2df, 0x79541cb2d17c};
+
 void
 fp_set_small(fp_t *x, const digit_t val)
 {
@@ -905,4 +913,16 @@ void
 fp_div3(fp_t *out, const fp_t *a)
 {
     modmul(THREE_INV, *a, *out);
+}
+
+void
+fp_encode(void *dst, const fp_t *a)
+{
+    modexp(a, dst);
+}
+
+uint32_t
+fp_decode(fp_t *d, const void *src)
+{
+    return modimp(src,d);
 }

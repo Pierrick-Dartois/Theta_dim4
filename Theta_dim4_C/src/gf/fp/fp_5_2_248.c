@@ -554,9 +554,9 @@ const digit_t ZERO[NWORDS_FIELD] = {0x0, 0x0, 0x0, 0x0, 0x0};
 
 const digit_t ONE[NWORDS_FIELD] = {0x19, 0x0, 0x0, 0x0, 0x300000000000};
 
-const digit_t TWO_INV[NWORDS_FIELD] = {0xc, 0x0, 0x0, 0x0, 0x400000000000};
+static const digit_t TWO_INV[NWORDS_FIELD] = {0xc, 0x0, 0x0, 0x0, 0x400000000000};
 
-const digit_t THREE_INV[NWORDS_FIELD] = {0x555555555555d, 0x2aaaaaaaaaaaa, 0x5555555555555, 0x2aaaaaaaaaaaa, 0x455555555555};
+static const digit_t THREE_INV[NWORDS_FIELD] = {0x555555555555d, 0x2aaaaaaaaaaaa, 0x5555555555555, 0x2aaaaaaaaaaaa, 0x455555555555};
 
 void
 fp_set_small(fp_t *x, const digit_t val)
@@ -670,4 +670,16 @@ void
 fp_div3(fp_t *out, const fp_t *a)
 {
     modmul(THREE_INV, *a, *out);
+}
+
+void
+fp_encode(void *dst, const fp_t *a)
+{
+    modexp(a, dst);
+}
+
+uint32_t
+fp_decode(fp_t *d, const void *src)
+{
+    return modimp(src,d);
 }

@@ -28,7 +28,7 @@ A minimal copy of this library (with less dependencies and finite fields) could 
 
 - C11-compatible compiler.
 - modarith (https://github.com/mcarrickscott/modarith), a library to automatically generate code for the $\mathbb{F}_p$ arithmetic.
-- sagemath to generate parameters for 
+- sagemath to generate parameters for each choice of finite field.
 
 As this library should be able to handle many finite fiels and to allow the user to generate new ones, modarith and sagemath were included for that purpose. These dependencies are unnecessary for applications when finite fields are already generated.
 

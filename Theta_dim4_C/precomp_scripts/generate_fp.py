@@ -224,13 +224,13 @@ def write_field_file(p):
 	file.write("\n}")
 
 	file.write("\n\nvoid")
-	file.write("fp_encode(void *dst, const fp_t *a)")
+	file.write("\nfp_encode(void *dst, const fp_t *a)")
 	file.write("\n{")
 	file.write("\n    modexp(a, dst);")
 	file.write("\n}")
 
 	file.write("\n\nuint32_t")
-	file.write("fp_decode(fp_t *d, const void *src)")
+	file.write("\nfp_decode(fp_t *d, const void *src)")
 	file.write("\n{")
 	file.write("\n    return modimp(src,d);")
 	file.write("\n}")
@@ -276,14 +276,14 @@ class Ibz:
 def write_constants_file(p,name,d_word_params,args=[]):
 	file = open("../src/params/fp_params/constants_"+name+".c","w")
 	file.write("#include <constants.h>")
-	file.write("\nconst uint64_t NWORDS_FIELD = "+d_word_params['Radix']+";")
-	file.write("\nconst uint64_t NWORDS_ORDER = "+ceil(d_word_params['Nbits']/d_word_params['Wordlength'])+";")
+	file.write("\n\nconst uint64_t NWORDS_FIELD = "+str(d_word_params['Radix'])+";")
+	file.write("\nconst uint64_t NWORDS_ORDER = "+str(ceil(d_word_params['Nbits']/d_word_params['Wordlength']))+";")
 
-	factor_l = (len(L)>0)
+	factor_l = (len(args)>0)
 
 	pdata = factor_pp1(p)
 
-	file.write("\nconst uint64_t TORSION_EVEN_POWER = "+pdata[1]+";")
+	file.write("\nconst uint64_t TORSION_EVEN_POWER = "+str(pdata[1])+";")
 
 	charac = Ibz(p)
 	file.write("\nconst ibz_t CHARACTERISTIC = "+charac._literal(64)+";")
@@ -302,13 +302,13 @@ def write_constants_file(p,name,d_word_params,args=[]):
 		file.write("\nconst uint64_t TORSION_L_POWER = "+str(el)+";")
 
 		tor_l = Ibz(l**el)
-		file.write("\nconst ibz_t TORSION_L"+tor_l._literal(64)+";")
+		file.write("\nconst ibz_t TORSION_L = "+tor_l._literal(64)+";")
 
 		comp_l = Ibz(c*2**e2)
-		file.write("\nconst ibz_t TORSION_COMPLEMENT_L"+comp_l._literal(64)+";")
+		file.write("\nconst ibz_t TORSION_COMPLEMENT_L = "+comp_l._literal(64)+";")
 
 		file.write("\nconst uint64_t CONST_FL = "+str(f_l)+";")
-		file.write("\nconst uint64_t CONST_F2 = "+str(f_2)";")
+		file.write("\nconst uint64_t CONST_F2 = "+str(f_2)+";")
 
 		A1 = Ibz(a1)
 		file.write("\nconst ibz_t CONST_A1 = "+A1._literal(64)+";")
