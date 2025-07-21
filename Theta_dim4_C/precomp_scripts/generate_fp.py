@@ -229,14 +229,94 @@ def write_field_file(p):
 	file.write("\n    modexp(a, dst);")
 	file.write("\n}")
 
-	file.write("\n\nvoid")
-	file.write("fp_decode_reduce(fp_t *d, const void *src, size_t len)")
+	file.write("\n\nuint32_t")
+	file.write("fp_decode(fp_t *d, const void *src)")
 	file.write("\n{")
-	file.write("\n    modimp(src,d);")
+	file.write("\n    return modimp(src,d);")
 	file.write("\n}")
 
+	file.close()
 
+	return d_word_params
 
+def factor_pp1(p,factor_l=True):
+	L = list(factor(p+1))
+	e2 = L[0][1]
+
+	if factor_l:
+		il = 1
+		for i in range(1,len(L)):
+			if L[i][1]>L[il][1]:
+				il = i
+		l, el = L[il]
+
+		c = (p+1)//(2**e2*l**el)
+
+		return c, e2, l, el
+	else:
+		c = (p+1)//(2**e2)
+
+		return c, e2
+
+class Ibz:
+    def __init__(self, v):
+        self.v = int(v)
+    def _literal(self, sz):
+        val = int(self.v)
+        sgn = val < 0
+        num_limbs = (abs(val).bit_length() + sz-1) // sz if val else 0
+        limbs = [(abs(val) >> sz*i) & (2**sz-1) for i in range(num_limbs or 1)]
+        data = {
+                '._mp_alloc': 0,
+                '._mp_size': (-1)**sgn * num_limbs,
+                '._mp_d': '(mp_limb_t[]) {' + ','.join(map(hex,limbs)) + '}',
+            }
+        return '{{' + ', '.join(f'{k} = {v}' for k,v in data.items()) + '}}'
+
+def write_constants_file(p,name,d_word_params,args=[]):
+	file = open("../src/params/fp_params/constants_"+name+".c","w")
+	file.write("#include <constants.h>")
+	file.write("\nconst uint64_t NWORDS_FIELD = "+d_word_params['Radix']+";")
+	file.write("\nconst uint64_t NWORDS_ORDER = "+ceil(d_word_params['Nbits']/d_word_params['Wordlength'])+";")
+
+	factor_l = (len(L)>0)
+
+	pdata = factor_pp1(p)
+
+	file.write("\nconst uint64_t TORSION_EVEN_POWER = "+pdata[1]+";")
+
+	charac = Ibz(p)
+	file.write("\nconst ibz_t CHARACTERISTIC = "+charac._literal(64)+";")
+
+	tor_even = Ibz(2**pdata[1])
+	file.write("\nconst ibz_t TORSION_EVEN = "+tor_even._literal(64)+";")
+
+	tor_odd = Ibz((p+1)//2**pdata[1])
+	file.write("\nconst ibz_t TORSION_ODD = "+tor_odd._literal(64)+";")
+	
+	if factor_l:
+		c, e2, l, el = pdata
+		f_2, f_l, a1, a2 = args
+
+		file.write("\nconst uint64_t L = "+str(l)+";")
+		file.write("\nconst uint64_t TORSION_L_POWER = "+str(el)+";")
+
+		tor_l = Ibz(l**el)
+		file.write("\nconst ibz_t TORSION_L"+tor_l._literal(64)+";")
+
+		comp_l = Ibz(c*2**e2)
+		file.write("\nconst ibz_t TORSION_COMPLEMENT_L"+comp_l._literal(64)+";")
+
+		file.write("\nconst uint64_t CONST_FL = "+str(f_l)+";")
+		file.write("\nconst uint64_t CONST_F2 = "+str(f_2)";")
+
+		A1 = Ibz(a1)
+		file.write("\nconst ibz_t CONST_A1 = "+A1._literal(64)+";")
+
+		A2 = Ibz(a2)
+		file.write("\nconst ibz_t CONST_A2 = "+A2._literal(64)+";")
+
+	file.close()
 
 
 
@@ -253,6 +333,7 @@ if __name__=="__main__":
 	L_factors = list(factor(p+1))
 	power_2 = L_factors[0][1]
 
+	L_supp_args = []
 	if args.test:
 		# Find l, power_l such that p = c * 2**power_2 * l**power_l - 1
 		i = 1
@@ -265,11 +346,13 @@ if __name__=="__main__":
 		power_l = L_factors[i][1]
 
 		# Find f_2, f_l, a1, a2 such that f_l <= power_l, f_2 <= power_2-2 and a_1**2 + a2**2 + l**f_l = 2**f_2
-		f_2, f_l, a1, a2 = find_embedding_params(power_2,l,power_l)
+		L_supp_args = find_embedding_params(power_2,l,power_l)
 
 	os.system("python ../modarith/monty.py 64 {}".format(p))
 
-	write_field_file(p)
+	d_word_params = write_field_file(p)
+
+	write_constants_file(p,args.name,d_word_params,L_supp_args)
 
 	os.system("mv field.c ../src/gf/fp/fp_"+args.name+".c")
 	os.system("rm time.c")
