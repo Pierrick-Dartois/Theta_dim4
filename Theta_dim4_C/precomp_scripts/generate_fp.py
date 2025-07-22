@@ -12,6 +12,7 @@ import os
 import argparse
 from shutil import which
 from textwrap import dedent
+from re import match
 
 
 def prime_shape(p):
@@ -145,13 +146,13 @@ def int_to_montgemery_fp_const(x, p, Nlimbs, Radix):
 
 def write_field_file(p):
     d_word_params = {}
-    file = open("field.c", "a+")
-    file.seek(0)
 
-    L_file = file.readlines()
-    for i in range(14, 19):
-        L_line = L_file[i][:-1].split(" ")
-        d_word_params[L_line[1]] = int(L_line[2])
+    params = ["Wordlength", "Nlimbs", "Radix", "Nbits", "Nbytes"]
+
+    for line in open("field.c").readlines():
+        for param in params:
+            if m := match(f"^#define {param} ([0-9]*)$", line):
+                d_word_params[param] = int(m.group(1))
 
     Nlimbs = d_word_params["Nlimbs"]
     Radix = d_word_params["Radix"]
