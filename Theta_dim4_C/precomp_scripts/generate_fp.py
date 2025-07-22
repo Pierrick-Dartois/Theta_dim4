@@ -415,7 +415,7 @@ if __name__ == "__main__":
     if args.test:
         addl_args = find_embedding_params(p_shape)
 
-    os.system(f"python ../external/modarith/monty.py 64 {p}")
+    os.system(f"python ../external/modarith/monty.py 64 {p} > /dev/null 2>&1")
 
     d_word_params = write_field_file(p)
     write_constants_file(p, args.name, d_word_params, p_shape, args=addl_args)
