@@ -15,6 +15,37 @@ from shutil import which
 L_primes = prime_range(1000)
 
 
+def prime_shape(p):
+    """Factor p + 1 = c * 2^e_2 * ell^e_ell, returning tuple (c, e_2, ell, e_ell)
+
+    - `c` is a (usually small) cofactor
+    - `ell` the odd prime dividing p + 1 with the highest multiplicity (`e_ell`)
+    """
+    assert (p + 1) % 2 == 0
+
+    # We choose `ell` by finding the prime with the highest multiplicity
+    # First sort by prime
+    factors = sorted(factor(p + 1), key=lambda x: x[0])
+
+    # Get multiplicity of 2 in power (`factor` returns a sorted list)
+    e_2 = factors[0][1]
+
+    # Sort remaining by multiplicity (ignoring 2)
+    factors = sorted(factors[1:], key=lambda x: x[1], reverse=True)
+
+    if factors:
+        ell, e_ell = factors[0]
+        c = (p + 1) / (2**e_2 * ell**e_ell)
+    else:
+        # p is a mersenne prime
+        ell, e_ell = 1, 1
+        c = 1
+
+    assert p + 1 == c * 2**e_2 * ell**e_ell
+
+    return c, e_2, ell, e_ell
+
+
 def lazy_factor(N):
     r"""
     We return the factorization of N if it is easy
@@ -69,12 +100,13 @@ def lazy_cornacchia(N):
         return False
 
 
-def find_embedding_params(e2_max, l, el_max):
+def find_embedding_params(p_shape):
     r"""
     Given exponents e2_max and el_max of the accessible 2**e2_max and
     l**el_max-torsion respectively, this function finds integers e2, el, a1, a2
     such that 2**e2=l**el+a1**2+a2**2, where el is the biggest possible.
     """
+    _, e2_max, l, el_max = p_shape
 
     e2 = e2_max
     el = el_max
@@ -296,8 +328,10 @@ class Ibz:
         return "{{" + ", ".join(f"{k} = {v}" for k, v in data.items()) + "}}"
 
 
-def write_constants_file(p, name, d_word_params, args=[]):
+def write_constants_file(p, name, d_word_params, p_shape, args=[]):
     filename = f"../src/params/fp_params/constants_{name}.c"
+
+    c, e_2, ell, e_ell = p_shape
 
     lines = []
     lines += ["#include <constants.h>"]
@@ -305,30 +339,25 @@ def write_constants_file(p, name, d_word_params, args=[]):
     lines += [f"const uint64_t NWORDS_FIELD = {d_word_params["Radix"]};"]
     lines += [f"const uint64_t NWORDS_ORDER = {ceil(d_word_params["Nbits"] / d_word_params["Wordlength"])};"]
 
-    factor_l = len(args) > 0
-
-    pdata = factor_pp1(p)
-
     charac = Ibz(p)
-    tor_even = Ibz(2 ** pdata[1])
-    tor_odd = Ibz((p + 1) // 2 ** pdata[1])
+    tor_even = Ibz(2 ** e_2)
+    tor_odd = Ibz((p + 1) // 2 ** e_2)
 
-    lines += [f"const uint64_t TORSION_EVEN_POWER = {pdata[1]};"]
+    lines += [f"const uint64_t TORSION_EVEN_POWER = {e_2};"]
     lines += [f"const ibz_t CHARACTERISTIC = {charac._literal(64)};"]
     lines += [f"const ibz_t TORSION_EVEN = {tor_even._literal(64)};"]
     lines += [f"const ibz_t TORSION_ODD = {tor_odd._literal(64)};"]
 
-    if factor_l:
-        c, e2, l, el = pdata
+    if args:
         f_2, f_l, a1, a2 = args
 
-        tor_l = Ibz(l**el)
-        comp_l = Ibz(c * 2**e2)
+        tor_l = Ibz(ell**e_ell)
+        comp_l = Ibz(c * 2**e_2)
         A1 = Ibz(a1)
         A2 = Ibz(a2)
 
-        lines += [f"const uint64_t L = {l};"]
-        lines += [f"const uint64_t TORSION_L_POWER = {el};"]
+        lines += [f"const uint64_t L = {ell};"]
+        lines += [f"const uint64_t TORSION_L_POWER = {e_ell};"]
         lines += [f"const ibz_t TORSION_L = {tor_l._literal(64)};"]
         lines += [f"const ibz_t TORSION_COMPLEMENT_L = {comp_l._literal(64)};"]
         lines += [f"const uint64_t CONST_FL = {f_l};"]
@@ -358,37 +387,17 @@ if __name__ == "__main__":
     # Bad habit to use `eval`, but since data is not supplied by untrused user it is probably okay
     # Could be replaced with https://stackoverflow.com/a/69540962
     p = eval(args.prime)
+    p_shape = prime_shape(p)
 
     addl_args = []
 
     if args.test:
-        # We assume that
-        #   p = c * 2**e_2 * ell**e_ell
-        # where c is a small cofactor
-
-        assert (p + 1) % 2 == 0
-
-        # We choose `ell` by finding the prime with the highest multiplicity
-        # First sort by prime
-        factors = sorted(factor(p + 1), key=lambda x: x[0])
-        # Get multiplicity of 2 in power
-        e_2 = factors[0][1]
-        # Sort remaining by multiplicity (ignoring 2)
-        factors = sorted(factors[1:], key=lambda x: x[1], reverse=True)
-
-        if factors:
-            ell, e_ell = factors[0]
-        else:
-            # p is mersenne prime
-            ell, e_ell = 1, 1
-
-        addl_args = find_embedding_params(e_2, ell, e_ell)
+        addl_args = find_embedding_params(p_shape)
 
     os.system(f"python ../external/modarith/monty.py 64 {p}")
 
     d_word_params = write_field_file(p)
-
-    write_constants_file(p, args.name, d_word_params, addl_args)
+    write_constants_file(p, args.name, d_word_params, p_shape, addl_args)
 
     os.system("mv -v field.c ../src/gf/fp/fp_" + args.name + ".c")
     os.system("rm -v time.c")
