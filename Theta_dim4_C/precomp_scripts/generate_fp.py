@@ -356,29 +356,37 @@ if __name__ == "__main__":
         exit(1)
 
     p = eval(args.prime)
-    L_factors = list(factor(p + 1))
-    power_2 = L_factors[0][1]
 
-    L_supp_args = []
+    addl_args = []
+
     if args.test:
-        # Find l, power_l such that p = c * 2**power_2 * l**power_l - 1
-        i = 1
-        power_l = L_factors[1][1]
-        for j in range(1, len(L_factors)):
-            if L_factors[j][1] > power_l:
-                i = j
+        # We assume that
+        #   p = c * 2**e_2 * ell**e_ell
+        # where c is a small cofactor
 
-        l = L_factors[i][0]
-        power_l = L_factors[i][1]
+        assert (p + 1) % 2 == 0
 
-        # Find f_2, f_l, a1, a2 such that f_l <= power_l, f_2 <= power_2-2 and a_1**2 + a2**2 + l**f_l = 2**f_2
-        L_supp_args = find_embedding_params(power_2, l, power_l)
+        # We choose `ell` by finding the prime with the highest multiplicity
+        # First sort by prime
+        factors = sorted(factor(p + 1), key=lambda x: x[0])
+        # Get multiplicity of 2 in power
+        e_2 = factors[0][1]
+        # Sort remaining by multiplicity (ignoring 2)
+        factors = sorted(factors[1:], key=lambda x: x[1], reverse=True)
+
+        if factors:
+            ell, e_ell = factors[0]
+        else:
+            # p is mersenne prime
+            ell, e_ell = 1, 1
+
+        addl_args = find_embedding_params(e_2, ell, e_ell)
 
     os.system(f"python ../external/modarith/monty.py 64 {p}")
 
     d_word_params = write_field_file(p)
 
-    write_constants_file(p, args.name, d_word_params, L_supp_args)
+    write_constants_file(p, args.name, d_word_params, addl_args)
 
     os.system("mv field.c ../src/gf/fp/fp_" + args.name + ".c")
     os.system("rm time.c")
