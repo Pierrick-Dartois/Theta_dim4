@@ -10,7 +10,7 @@ from sage.rings.imaginary_unit import I as eye
 
 import os
 import argparse
-
+from shutil import which
 
 L_primes = prime_range(1000)
 
@@ -349,6 +349,11 @@ if __name__ == "__main__":
     parser.add_argument("-t", "--test", action="store_true")
 
     args = parser.parse_args()
+
+    # `addchain` must be compiled, and so cannot be shipped as-is
+    if not which("addchain"):
+        print("Cannot find `addchain` in `$PATH`. This is necessary for `modarith`")
+        exit(1)
 
     p = eval(args.prime)
     L_factors = list(factor(p + 1))
