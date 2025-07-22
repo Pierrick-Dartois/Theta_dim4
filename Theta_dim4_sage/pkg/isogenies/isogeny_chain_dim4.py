@@ -26,7 +26,7 @@ class IsogenyChainDim4:
 		"""
 		Compute the isogeny chain and store intermediate isogenies for evaluation
 		"""
-		# Store chain of (2,2)-isogenies
+		# Store chain of 2-isogenies in dimension 4
 		isogeny_chain = []
 
 		# Bookkeeping for optimal strategy
