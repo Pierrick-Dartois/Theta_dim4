@@ -388,5 +388,5 @@ if __name__ == "__main__":
 
     write_constants_file(p, args.name, d_word_params, addl_args)
 
-    os.system("mv field.c ../src/gf/fp/fp_" + args.name + ".c")
-    os.system("rm time.c")
+    os.system("mv -v field.c ../src/gf/fp/fp_" + args.name + ".c")
+    os.system("rm -v time.c")
