@@ -355,6 +355,8 @@ if __name__ == "__main__":
         print("Cannot find `addchain` in `$PATH`. This is necessary for `modarith`")
         exit(1)
 
+    # Bad habit to use `eval`, but since data is not supplied by untrused user it is probably okay
+    # Could be replaced with https://stackoverflow.com/a/69540962
     p = eval(args.prime)
 
     addl_args = []
