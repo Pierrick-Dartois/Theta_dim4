@@ -2,5 +2,8 @@
 	path = Theta_dim4_C/fiat-crypto
 	url = git@github.com:mit-plv/fiat-crypto.git
 [submodule "Theta_dim4_C/modarith"]
-	path = Theta_dim4_C/modarith
+	path = Theta_dim4_C/external/modarith
 	url = git@github.com:mcarrickscott/modarith.git
+[submodule "Theta_dim4_C/external/addchain"]
+	path = Theta_dim4_C/external/addchain
+	url = https://github.com/mmcloughlin/addchain
