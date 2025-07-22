@@ -1,4 +1,4 @@
-from sage.all import *
+#!/usr/bin/env python3
 
 from sage.arith.misc import is_prime
 from sage.quadratic_forms.binary_qf import BinaryQF
