@@ -328,7 +328,7 @@ class Ibz:
         return "{{" + ", ".join(f"{k} = {v}" for k, v in data.items()) + "}}"
 
 
-def write_constants_file(p, name, d_word_params, p_shape, args=[]):
+def write_constants_file(p, name, d_word_params, p_shape, args=None):
     filename = f"../src/params/fp_params/constants_{name}.c"
 
     c, e_2, ell, e_ell = p_shape
@@ -348,7 +348,7 @@ def write_constants_file(p, name, d_word_params, p_shape, args=[]):
     lines += [f"const ibz_t TORSION_EVEN = {tor_even._literal(64)};"]
     lines += [f"const ibz_t TORSION_ODD = {tor_odd._literal(64)};"]
 
-    if args:
+    if args is not None:
         f_2, f_l, a1, a2 = args
 
         tor_l = Ibz(ell**e_ell)
@@ -397,7 +397,7 @@ if __name__ == "__main__":
     os.system(f"python ../external/modarith/monty.py 64 {p}")
 
     d_word_params = write_field_file(p)
-    write_constants_file(p, args.name, d_word_params, p_shape, addl_args)
+    write_constants_file(p, args.name, d_word_params, p_shape, args=addl_args)
 
     os.system("mv -v field.c ../src/gf/fp/fp_" + args.name + ".c")
     os.system("rm -v time.c")
