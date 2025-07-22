@@ -364,7 +364,7 @@ if __name__ == "__main__":
         # Find f_2, f_l, a1, a2 such that f_l <= power_l, f_2 <= power_2-2 and a_1**2 + a2**2 + l**f_l = 2**f_2
         L_supp_args = find_embedding_params(power_2, l, power_l)
 
-    os.system("python ../modarith/monty.py 64 {}".format(p))
+    os.system(f"python ../external/modarith/monty.py 64 {p}")
 
     d_word_params = write_field_file(p)
 

@@ -2,8 +2,8 @@
 
 # Compilation of fiat-crypto (if necessary)
 
-FIAT_CRYPTO_DIR = fiat-crypto
-FIAT_CRYPTO_BIN = fiat-crypto/src/ExtractionOcaml/bedrock2_fiat_crypto
+FIAT_CRYPTO_DIR = external/fiat-crypto
+FIAT_CRYPTO_BIN = external/fiat-crypto/src/ExtractionOcaml/bedrock2_fiat_crypto
 
 ifneq ("$(wildcard $(FIAT_CRYPTO_BIN))","")
     MSG_FIAT_CRYPTO = Fiat-crypto is already compiled.
@@ -28,7 +28,7 @@ ifeq ("$(wildcard $(PRIME_CFILE))","")
 		GF_GEN = 
 	else
 		MSG_PRIME = Undefined prime name. Generating GFp code...
-		GF_GEN = ./fiat-crypto/src/ExtractionOcaml/bedrock2_fiat_crypto word-by-word-montgomery\
+		GF_GEN = ./external/fiat-crypto/src/ExtractionOcaml/bedrock2_fiat_crypto word-by-word-montgomery\
 		 --no-wide-int --widen-carry --widen-bytes --split-multiret --no-select \
 		 $(PNAME) $(RADIX) '$(PVAL)' > $(PRIME_CFILE) 
 	endif
