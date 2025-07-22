@@ -47,8 +47,7 @@ def prime_shape(p):
 
 
 def is_sum_of_two_squares(N, smoothness=1000):
-    r"""Return factorisation of N if it is a sum of two squares and `smoothness`-smooth, False otherwise
-    """
+    r"""Return factorisation of N if it is a sum of two squares and `smoothness`-smooth, False otherwise"""
 
     partial_factorization = factor_trial_division(N, smoothness)
 
@@ -361,8 +360,8 @@ def write_constants_file(p, name, d_word_params, p_shape, args=None):
     lines += [f"const uint64_t NWORDS_ORDER = {ceil(d_word_params["Nbits"] / d_word_params["Wordlength"])};"]
 
     charac = Ibz(p)
-    tor_even = Ibz(2 ** e_2)
-    tor_odd = Ibz((p + 1) // 2 ** e_2)
+    tor_even = Ibz(2**e_2)
+    tor_odd = Ibz((p + 1) // 2**e_2)
 
     lines += [f"const uint64_t TORSION_EVEN_POWER = {e_2};"]
     lines += [f"const ibz_t CHARACTERISTIC = {charac._literal(64)};"]
