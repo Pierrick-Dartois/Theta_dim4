@@ -133,7 +133,7 @@ def find_embedding_params(p_shape):
                     a1, a2 = two_squares_factored(N_factored)
                     return e2, el, a1, a2
 
-    return False
+    return None
 
 
 def int_to_montgemery_fp_const(x, p, Nlimbs, Radix):
@@ -409,7 +409,7 @@ if __name__ == "__main__":
     p = eval(args.prime)
     p_shape = prime_shape(p)
 
-    addl_args = []
+    addl_args = None
 
     if args.test:
         addl_args = find_embedding_params(p_shape)
