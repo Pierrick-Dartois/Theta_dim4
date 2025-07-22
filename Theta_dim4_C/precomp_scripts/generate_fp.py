@@ -11,6 +11,7 @@ from sage.rings.finite_rings.integer_mod import Mod
 import os
 import argparse
 from shutil import which
+from textwrap import dedent
 
 
 def prime_shape(p):
@@ -155,150 +156,157 @@ def write_field_file(p):
     Nlimbs = d_word_params["Nlimbs"]
     Radix = d_word_params["Radix"]
 
-    file.write("\n\n/******************************************************************************")
-    file.write("\nAPI functions calling generated code above")
-    file.write("\n******************************************************************************/")
+    lines = []
 
-    file.write("\n\nconst digit_t ZERO[NWORDS_FIELD] = " + int_to_montgemery_fp_const(0, p, Nlimbs, Radix) + ";")
-    file.write("\n\nconst digit_t ONE[NWORDS_FIELD] = " + int_to_montgemery_fp_const(1, p, Nlimbs, Radix) + ";")
-    file.write(
-        "\n\nstatic const digit_t TWO_INV[NWORDS_FIELD] = "
-        + int_to_montgemery_fp_const(inverse_mod(2, p), p, Nlimbs, Radix)
-        + ";"
-    )
-    file.write(
-        "\n\nstatic const digit_t THREE_INV[NWORDS_FIELD] = "
-        + int_to_montgemery_fp_const(inverse_mod(3, p), p, Nlimbs, Radix)
-        + ";"
-    )
+    lines += [""]
+    lines += ["/******************************************************************************"]
+    lines += ["API functions calling generated code above"]
+    lines += ["******************************************************************************/"]
+    lines += [""]
 
-    file.write("\n\nvoid")
-    file.write("\nfp_set_small(fp_t *x, const digit_t val)")
-    file.write("\n{")
-    file.write("\n    modint((int)val, *x);")
-    file.write("\n}")
+    lines += [f"const digit_t ZERO[NWORDS_FIELD] = {int_to_montgemery_fp_const(0, p, Nlimbs, Radix)};"]
+    lines += [f"const digit_t ONE[NWORDS_FIELD] = {int_to_montgemery_fp_const(1, p, Nlimbs, Radix)};"]
+    lines += [
+        f"static const digit_t TWO_INV[NWORDS_FIELD] = {int_to_montgemery_fp_const(inverse_mod(2, p), p, Nlimbs, Radix)};"
+    ]
+    lines += [
+        f"\nstatic const digit_t THREE_INV[NWORDS_FIELD] = {int_to_montgemery_fp_const(inverse_mod(3, p), p, Nlimbs, Radix)};"
+    ]
 
-    file.write("\n\nvoid")
-    file.write("\nfp_mul_small(fp_t *x, const fp_t *a, const uint32_t val)")
-    file.write("\n{")
-    file.write("\n    modmli(*a, (int)val, *x);")
-    file.write("\n}")
+    lines += [
+        dedent(
+            """
+        void
+        fp_set_small(fp_t *x, const digit_t val)
+        {
+            modint((int)val, *x);
+        }
 
-    file.write("\n\nvoid")
-    file.write("\nfp_set_zero(fp_t *x)")
-    file.write("\n{")
-    file.write("\n    modzer(*x);")
-    file.write("\n}")
+        void
+        fp_mul_small(fp_t *x, const fp_t *a, const uint32_t val)
+        {
+            modmli(*a, (int)val, *x);
+        }
 
-    file.write("\n\nvoid")
-    file.write("\nfp_set_one(fp_t *x)")
-    file.write("\n{")
-    file.write("\n    modone(*x);")
-    file.write("\n}")
+        void
+        fp_set_zero(fp_t *x)
+        {
+            modzer(*x);
+        }
 
-    file.write("\n\nuint32_t")
-    file.write("\nfp_is_equal(const fp_t *a, const fp_t *b)")
-    file.write("\n{")
-    file.write("\n    return -(uint32_t)modcmp(*a, *b);")
-    file.write("\n}")
+        void
+        fp_set_one(fp_t *x)
+        {
+            modone(*x);
+        }
 
-    file.write("\n\nuint32_t")
-    file.write("\nfp_is_zero(const fp_t *a)")
-    file.write("\n{")
-    file.write("\n    return -(uint32_t)modis0(*a);")
-    file.write("\n}")
+        uint32_t
+        fp_is_equal(const fp_t *a, const fp_t *b)
+        {
+            return -(uint32_t)modcmp(*a, *b);
+        }
 
-    file.write("\n\nvoid")
-    file.write("\nfp_copy(fp_t *out, const fp_t *a)")
-    file.write("\n{")
-    file.write("\n    modcpy(*a, *out);")
-    file.write("\n}")
+        uint32_t
+        fp_is_zero(const fp_t *a)
+        {
+            return -(uint32_t)modis0(*a);
+        }
 
-    file.write("\n\nvoid")
-    file.write("\nfp_cswap(fp_t *a, fp_t *b, uint32_t ctl)")
-    file.write("\n{")
-    file.write("\n    modcsw((int)(ctl & 0x1), *a, *b);")
-    file.write("\n}")
+        void
+        fp_copy(fp_t *out, const fp_t *a)
+        {
+            modcpy(*a, *out);
+        }
 
-    file.write("\n\nvoid")
-    file.write("\nfp_add(fp_t *out, const fp_t *a, const fp_t *b)")
-    file.write("\n{")
-    file.write("\n    modadd(*a, *b, *out);")
-    file.write("\n}")
+        void
+        fp_cswap(fp_t *a, fp_t *b, uint32_t ctl)
+        {
+            modcsw((int)(ctl & 0x1), *a, *b);
+        }
 
-    file.write("\n\nvoid")
-    file.write("\nfp_sub(fp_t *out, const fp_t *a, const fp_t *b)")
-    file.write("\n{")
-    file.write("\n    modsub(*a, *b, *out);")
-    file.write("\n}")
+        void
+        fp_add(fp_t *out, const fp_t *a, const fp_t *b)
+        {
+            modadd(*a, *b, *out);
+        }
 
-    file.write("\n\nvoid")
-    file.write("\nfp_neg(fp_t *out, const fp_t *a)")
-    file.write("\n{")
-    file.write("\n    modneg(*a, *out);")
-    file.write("\n}")
+        void
+        fp_sub(fp_t *out, const fp_t *a, const fp_t *b)
+        {
+            modsub(*a, *b, *out);
+        }
 
-    file.write("\n\nvoid")
-    file.write("\nfp_sqr(fp_t *out, const fp_t *a)")
-    file.write("\n{")
-    file.write("\n    modsqr(*a, *out);")
-    file.write("\n}")
+        void
+        fp_neg(fp_t *out, const fp_t *a)
+        {
+            modneg(*a, *out);
+        }
 
-    file.write("\n\nvoid")
-    file.write("\nfp_mul(fp_t *out, const fp_t *a, const fp_t *b)")
-    file.write("\n{")
-    file.write("\n    modmul(*a, *b, *out);")
-    file.write("\n}")
+        void
+        fp_sqr(fp_t *out, const fp_t *a)
+        {
+            modsqr(*a, *out);
+        }
 
-    file.write("\n\nvoid")
-    file.write("\nfp_inv(fp_t *x)")
-    file.write("\n{")
-    file.write("\n    modinv(*x, NULL, *x);")
-    file.write("\n}")
+        void
+        fp_mul(fp_t *out, const fp_t *a, const fp_t *b)
+        {
+            modmul(*a, *b, *out);
+        }
 
-    file.write("\n\nuint32_t")
-    file.write("\nfp_is_square(const fp_t *a)")
-    file.write("\n{")
-    file.write("\n    return -(uint32_t)modqr(NULL, *a);")
-    file.write("\n}")
+        void
+        fp_inv(fp_t *x)
+        {
+            modinv(*x, NULL, *x);
+        }
 
-    file.write("\n\nvoid")
-    file.write("\nfp_sqrt(fp_t *a)")
-    file.write("\n{")
-    file.write("\n    modsqrt(*a, NULL, *a);")
-    file.write("\n}")
+        uint32_t
+        fp_is_square(const fp_t *a)
+        {
+            return -(uint32_t)modqr(NULL, *a);
+        }
 
-    file.write("\n\nvoid")
-    file.write("\nfp_half(fp_t *out, const fp_t *a)")
-    file.write("\n{")
-    file.write("\n    modmul(TWO_INV, *a, *out);")
-    file.write("\n}")
+        void
+        fp_sqrt(fp_t *a)
+        {
+            modsqrt(*a, NULL, *a);
+        }
 
-    file.write("\n\nvoid")
-    file.write("\nfp_exp3div4(fp_t *out, const fp_t *a)")
-    file.write("\n{")
-    file.write("\n    modpro(*a, *out);")
-    file.write("\n}")
+        void
+        fp_half(fp_t *out, const fp_t *a)
+        {
+            modmul(TWO_INV, *a, *out);
+        }
 
-    file.write("\n\nvoid")
-    file.write("\nfp_div3(fp_t *out, const fp_t *a)")
-    file.write("\n{")
-    file.write("\n    modmul(THREE_INV, *a, *out);")
-    file.write("\n}")
+        void
+        fp_exp3div4(fp_t *out, const fp_t *a)
+        {
+            modpro(*a, *out);
+        }
 
-    file.write("\n\nvoid")
-    file.write("\nfp_encode(void *dst, const fp_t *a)")
-    file.write("\n{")
-    file.write("\n    modexp(a, dst);")
-    file.write("\n}")
+        void
+        fp_div3(fp_t *out, const fp_t *a)
+        {
+            modmul(THREE_INV, *a, *out);
+        }
 
-    file.write("\n\nuint32_t")
-    file.write("\nfp_decode(fp_t *d, const void *src)")
-    file.write("\n{")
-    file.write("\n    return modimp(src,d);")
-    file.write("\n}")
+        void
+        fp_encode(void *dst, const fp_t *a)
+        {
+            modexp(a, dst);
+        }
 
-    file.close()
+        uint32_t
+        fp_decode(fp_t *d, const void *src)
+        {
+            return modimp(src,d);
+        }
+    """
+        )
+    ]
+
+    with open("field.c", "a+") as file:
+        file.writelines([line + "\n" for line in lines])
 
     return d_word_params
 
