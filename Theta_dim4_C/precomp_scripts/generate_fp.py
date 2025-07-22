@@ -1,18 +1,16 @@
 #!/usr/bin/env python3
 
-from sage.arith.misc import is_prime
-from sage.quadratic_forms.binary_qf import BinaryQF
-from sage.rings.fast_arith import prime_range
 from sage.functions.other import ceil
 from sage.arith.misc import factor
 from sage.arith.misc import inverse_mod
-from sage.rings.imaginary_unit import I as eye
+from sage.rings.factorint import factor_trial_division
+from sage.structure.factorization import Factorization
+from sage.rings.integer_ring import ZZ
+from sage.rings.finite_rings.integer_mod import Mod
 
 import os
 import argparse
 from shutil import which
-
-L_primes = prime_range(1000)
 
 
 def prime_shape(p):
@@ -46,58 +44,73 @@ def prime_shape(p):
     return c, e_2, ell, e_ell
 
 
-def lazy_factor(N):
-    r"""
-    We return the factorization of N if it is easy
-    to factor and can be decomposed as a sum of two squares
-    and False otherwise.
+def is_sum_of_two_squares(N, smoothness=1000):
+    r"""Return factorisation of N if it is a sum of two squares and `smoothness`-smooth, False otherwise
     """
 
-    M = N
-    L_fact = []
-    for p in L_primes:
-        e_p = 0
-        while M % p == 0:
-            M = M // p
-            e_p += 1
-        if e_p > 0:
-            if p == 2 or p % 4 == 1 or (p % 4 == 3 and e_p % 2 == 0):
-                L_fact.append((p, e_p))
-            else:
-                return False
-    if is_prime(M) and M % 4 == 1:
-        L_fact.append((M, 1))
-        return L_fact
-    else:
-        return False
+    partial_factorization = factor_trial_division(N, smoothness)
+
+    for p, e_p in partial_factorization:
+        if not (p == 2 or p % 4 == 1 or (p % 4 == 3 and e_p % 2 == 0)):
+            return False
+
+    return partial_factorization
 
 
-def lazy_cornacchia(N):
-    r"""
-    Returns integers a1, a2 such that N=a1**2+a2**2 if they exist and are easy to find.
-    Returns False otherwise.
+# Taken from PEGASIS source
+# https://github.com/pegasis4d/pegasis
+def two_squares_factored(factors):
     """
-    Q0 = BinaryQF([1, 0, 1])
+    This is the function `two_squares` from sage, except we give it the
+    factorisation of n already.
+    """
+    F = Factorization(factors)
+    for p, e in F:
+        if e % 2 == 1 and p % 4 == 3:
+            raise ValueError("%s is not a sum of 2 squares" % n)
 
-    L_fact = lazy_factor(N)
-    if L_fact:
-        L_a1a2 = []
-        sq_factor = 1
-        for fact in L_fact:
-            p, e_p = fact
-            if e_p % 2 == 0:
-                sq_factor *= p ** (e_p // 2)
-            else:
-                a1, a2 = Q0.solve_integer(p, algorithm="cornacchia")
-                L_a1a2.append((a1, a2, e_p))
+    n = F.expand()
+    if n == 0:
+        return (0, 0)
+    a = ZZ.one()
+    b = ZZ.zero()
+    for p, e in F:
+        if p == 1:
+            continue
+        if e >= 2:
+            m = p ** (e // 2)
+            a *= m
+            b *= m
+        if e % 2 == 1:
+            if p == 2:
+                # (a + bi) *= (1 + I)
+                a, b = a - b, a + b
+            else:  # p = 1 mod 4
+                # Find a square root of -1 mod p.
+                # If y is a non-square, then y^((p-1)/4) is a square root of -1.
+                y = Mod(2, p)
+                while True:
+                    s = y ** ((p - 1) / 4)
+                    if not s * s + 1:
+                        s = s.lift()
+                        break
+                    y += 1
+                # Apply Cornacchia's algorithm to write p as r^2 + s^2.
+                r = p
+                while s * s > p:
+                    r, s = s, r % s
+                r %= s
 
-        gauss_integer = 1
-        for elt in L_a1a2:
-            a1, a2, e_p = elt
-            gauss_integer *= (a1 + a2 * eye) ** e_p
-        return sq_factor * gauss_integer[0], sq_factor * gauss_integer[1]
+            # Multiply (a + bI) by (r + sI)
+            a, b = a * r - b * s, b * r + a * s
+
+    a = a.abs()
+    b = b.abs()
+    assert a * a + b * b == n
+    if a <= b:
+        return (a, b)
     else:
-        return False
+        return (b, a)
 
 
 def find_embedding_params(p_shape):
@@ -115,9 +128,8 @@ def find_embedding_params(p_shape):
         for e2 in range(e2_max):
             N = 2**e2 - l**el
             if N > 0:
-                a1a2 = lazy_cornacchia(N)
-                if a1a2:
-                    a1, a2 = a1a2
+                if N_factored := is_sum_of_two_squares(N):
+                    a1, a2 = two_squares_factored(N_factored)
                     return e2, el, a1, a2
 
     return False
