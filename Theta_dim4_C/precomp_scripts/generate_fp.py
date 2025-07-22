@@ -1,5 +1,13 @@
 from sage.all import *
 
+from sage.arith.misc import is_prime
+from sage.quadratic_forms.binary_qf import BinaryQF
+from sage.rings.fast_arith import prime_range
+from sage.functions.other import ceil
+from sage.arith.misc import factor
+from sage.arith.misc import inverse_mod
+from sage.rings.imaginary_unit import I as eye
+
 import os
 import argparse
 
@@ -55,7 +63,7 @@ def lazy_cornacchia(N):
         gauss_integer = 1
         for elt in L_a1a2:
             a1, a2, e_p = elt
-            gauss_integer *= (a1 + a2 * I) ** e_p
+            gauss_integer *= (a1 + a2 * eye) ** e_p
         return sq_factor * gauss_integer[0], sq_factor * gauss_integer[1]
     else:
         return False
