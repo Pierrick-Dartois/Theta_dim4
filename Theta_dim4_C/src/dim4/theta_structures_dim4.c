@@ -71,9 +71,10 @@ void theta_dim4_sq(field_t *out, const field_t *in) {
 void theta_struct_arith_precomp(theta_struct_dim4_t *theta_struct) {
   for (int i = 0; i < 16; i++) {
     field_copy(&theta_struct->null_point.coords[i],
-    	&theta_struct->inv_null_point[i]);
+    	&theta_struct->inv_dual_null_point[i]);
   }
   field_proj_batched_inv(theta_struct->null_point.coords, 16);
+  hadamard_dim4(theta_struct->null_point.coords,theta_struct->null_point.coords);
 
   theta_dim4_sq(theta_struct->inv_codomain_dual_null_point_sq,
                 theta_struct->null_point.coords);

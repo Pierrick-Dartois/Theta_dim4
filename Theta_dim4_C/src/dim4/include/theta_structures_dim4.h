@@ -80,9 +80,10 @@ typedef struct theta_point_dim4 {
 } theta_point_dim4_t;
 
 typedef struct theta_struct_dim4 {
-  field_t inv_null_point[16];  // Stores the inverse theta null point by default
-                               // (for isogeny evaluations). This saves a batch
-                               // inversion for every isogeny computation
+  field_t inv_dual_null_point[16];  // Stores the inverse dual theta null point
+                                    // by default (for isogeny evaluations).
+                                    // This saves a batch inversion for every
+                                    // isogeny computation
   int arith_precomp;
   theta_point_dim4_t null_point;
   filed_t inv_codomain_dual_null_point_sq[16];
@@ -94,5 +95,4 @@ void theta_struct_arith_precomp(theta_struct_dim4_t *theta_struct);
 void theta_double(theta_point_dim4_t *out, const theta_point_dim4_t *in,
                   theta_struct_dim4_t *theta_struct);
 void theta_double_iter(theta_point *out, const theta_point_dim4_t *in,
-                  theta_struct_dim4_t *theta_struct, int n);
-
+                       theta_struct_dim4_t *theta_struct, int n);
