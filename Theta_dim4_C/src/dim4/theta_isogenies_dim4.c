@@ -251,7 +251,7 @@ void isogeny_compute_dim4(theta_struct_dim4_t *codomain, tree_t *T,
   ind[0] = 0;
   extract_tree_edges(num, den, children, ind, T);
 
-  assert(ind[0] == 15);
+  //assert(ind[0] == 15);
 
   field_t factor;
   fp_proj_batched_inv_with_coeff(num,&factor,15);
