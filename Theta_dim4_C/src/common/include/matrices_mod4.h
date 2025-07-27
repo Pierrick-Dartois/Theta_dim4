@@ -25,11 +25,11 @@ void mod4_mat_4x4_mul(mod4_mat_4x4_t *res, const mod4_mat_4x4_t *A, const mod4_m
 void mod4_mat_4x4_transpose(mod4_mat_4x4_t *res, const mod4_mat_4x4_t *mat);
 uint32_t mod4_mat_4x4_inv(mod4_mat_4x4_t *res, const mod4_mat_4x4_t *mat);
 
-void mod4_scal_prod_2(unsigned int res, const mod2_vec_2_t *a, const mod2_vec_2_t *b);
-void mod2_scal_prod_2(unsigned int res, const mod2_vec_2_t *a, const mod2_vec_2_t *b);
+unsigned int mod4_scal_prod_2(const mod2_vec_2_t *a, const mod2_vec_2_t *b);
+unsigned int mod2_scal_prod_2(const mod2_vec_2_t *a, const mod2_vec_2_t *b);
 
-void mod4_scal_prod_4(unsigned int res, const mod2_vec_4_t *a, const mod2_vec_4_t *b);
-void mod2_scal_prod_4(unsigned int res, const mod2_vec_4_t *a, const mod2_vec_4_t *b);
+unsigned int mod4_scal_prod_4(const mod2_vec_4_t *a, const mod2_vec_4_t *b);
+unsigned int mod2_scal_prod_4(const mod2_vec_4_t *a, const mod2_vec_4_t *b);
 
 #endif
 

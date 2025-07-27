@@ -244,3 +244,38 @@ uint32_t mod4_mat_4x4_inv(mod4_mat_4x4_t *res, const mod4_mat_4x4_t *mat) {
   return ret;
 }
 
+unsigned int mod4_scal_prod_2(const mod2_vec_2_t *a, const mod2_vec_2_t *b) {
+  unsigned int res = 0;
+  for (int i = 0; i < 2; i++) {
+    res = res + (*a)[i] * (*b)[i];
+  }
+  res = res & 3;
+  return res;
+}
+
+unsigned int mod2_scal_prod_2(const mod2_vec_2_t *a, const mod2_vec_2_t *b) {
+  unsigned int res = 0;
+  for (int i = 0; i < 2; i++) {
+    res = res + (*a)[i] * (*b)[i];
+  }
+  res = res & 1;
+  return res;
+}
+
+unsigned int mod4_scal_prod_4(const mod2_vec_4_t *a, const mod2_vec_4_t *b) {
+  unsigned int res = 0;
+  for (int i = 0; i < 4; i++) {
+    res = res + (*a)[i] * (*b)[i];
+  }
+  res = res & 3;
+  return res;
+}
+
+unsigned int mod2_scal_prod_4(const mod2_vec_4_t *a, const mod2_vec_4_t *b) {
+  unsigned int res = 0;
+  for (int i = 0; i < 4; i++) {
+    res = res + (*a)[i] * (*b)[i];
+  }
+  res = res & 1;
+  return res;
+}
