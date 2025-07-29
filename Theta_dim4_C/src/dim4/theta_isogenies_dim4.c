@@ -227,7 +227,7 @@ static void gluing_isogeny_special_eval_T1_dim4(
   }
 }
 
-void gluing_isogeny_compute_dim4(gluing_isog_dim4_t *isog, tree_t *T,
+void gluing_isogeny_surf_compute_dim4(gluing_isog_surf_dim4_t *isog, tree_t *T,
                                  const theta_point_dim4_t *kernel_8,
                                  const int *theta_index_to_kernel_index,
                                  const unsigned int len_ker_8,

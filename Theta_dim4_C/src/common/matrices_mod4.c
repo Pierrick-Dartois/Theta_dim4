@@ -1,6 +1,6 @@
 #include <matrices_mod4.h>
 
-void mod4_mat_2x2_eval(mod2_vec_2_t *res, const mod4_mat_2x2_t *mat,
+void mod2_mat_2x2_eval(mod2_vec_2_t *res, const mod4_mat_2x2_t *mat,
                        const mod2_vec_2_t *vec) {
   for (int i = 0; i < 2; i++) {
     (*res)[i] = 0;
@@ -12,6 +12,21 @@ void mod4_mat_2x2_eval(mod2_vec_2_t *res, const mod4_mat_2x2_t *mat,
   }
   for (int i = 0; i < 2; i++) {
     (*res)[i] = (*res)[i] & 1;
+  }
+}
+
+void mod4_mat_2x2_eval(mod2_vec_2_t *res, const mod4_mat_2x2_t *mat,
+                       const mod2_vec_2_t *vec) {
+  for (int i = 0; i < 2; i++) {
+    (*res)[i] = 0;
+  }
+  for (int i = 0; i < 2; i++) {
+    for (int j = 0; j < 2; j++) {
+      (*res)[i] = (*res)[i] + (*mat)[i][j] * (*vec)[j];
+    }
+  }
+  for (int i = 0; i < 2; i++) {
+    (*res)[i] = (*res)[i] & 3;
   }
 }
 
@@ -63,7 +78,7 @@ uint32_t mod4_mat_2x2_inv(mod4_mat_2x2_t *res, const mod4_mat_2x2_t *mat) {
   return ret;
 }
 
-void mod4_mat_4x4_eval(mod2_vec_4_t *res, const mod4_mat_4x4_t *mat,
+void mod2_mat_4x4_eval(mod2_vec_4_t *res, const mod4_mat_4x4_t *mat,
                        const mod2_vec_4_t *vec) {
   for (int i = 0; i < 4; i++) {
     (*res)[i] = 0;
@@ -75,6 +90,21 @@ void mod4_mat_4x4_eval(mod2_vec_4_t *res, const mod4_mat_4x4_t *mat,
   }
   for (int i = 0; i < 4; i++) {
     (*res)[i] = (*res)[i] & 1;
+  }
+}
+
+void mod4_mat_4x4_eval(mod2_vec_4_t *res, const mod4_mat_4x4_t *mat,
+                       const mod2_vec_4_t *vec) {
+  for (int i = 0; i < 4; i++) {
+    (*res)[i] = 0;
+  }
+  for (int i = 0; i < 4; i++) {
+    for (int j = 0; j < 4; j++) {
+      (*res)[i] = (*res)[i] + (*mat)[i][j] * (*vec)[j];
+    }
+  }
+  for (int i = 0; i < 4; i++) {
+    (*res)[i] = (*res)[i] & 3;
   }
 }
 
@@ -278,4 +308,16 @@ unsigned int mod2_scal_prod_4(const mod2_vec_4_t *a, const mod2_vec_4_t *b) {
   }
   res = res & 1;
   return res;
+}
+
+unsigned int mod4_add_2(mod2_vec_2_t *res, const mod2_vec_2_t *a, const mod2_vec_2_t *b){
+  for(int i=0; i<2; i++){
+    (*res)[i] = ((*a)[i] + (*b)[i])&3;
+  }
+}
+
+unsigned int mod4_add_4(mod2_vec_4_t *res, const mod2_vec_4_t *a, const mod2_vec_4_t *b){
+  for(int i=0; i<4; i++){
+    (*res)[i] = ((*a)[i] + (*b)[i])&3;
+  }
 }

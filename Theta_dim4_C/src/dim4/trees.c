@@ -151,7 +151,7 @@ void index_to_multindex_dim4(mod2_vec_4_t res,const unsigned int ind){
 }
 
 unsigned int multindex_to_index_dim4(const mod2_vec_4_t in){
-  return in[0] + 2 * in[1] + 4 * in[2] + 8 * in[3];
+  return (in[0]&1) + 2 * (in[1]&1) + 4 * (in[2]&1) + 8 * (in[3]&1);
 }
 
 void find_zeros(int *zeros, const mod4_mat_4x4_t *C, const mod4_mat_4x4_t *D) {
@@ -220,7 +220,7 @@ void find_zeros(int *zeros, const mod4_mat_4x4_t *C, const mod4_mat_4x4_t *D) {
   for (int i=0; i<6; i++){
   	if (zeros[i]!=-1){
   		index_to_multindex_dim4(multind,zeros[i]);
-  		mod4_mat_4x4_eval(&multind, D, &multind);
+  		mod2_mat_4x4_eval(&multind, D, &multind);
   		zeros[i] = multindex_to_index_dim4(multind);
   	}
   }
