@@ -13,3 +13,107 @@ fp_select(fp_t *d, const fp_t *a0, const fp_t *a1, uint32_t ctl)
         (*d)[i] = (*a0)[i] ^ (cw & ((*a0)[i] ^ (*a1)[i]));
     }
 }
+
+uint32_t 
+fp_is_one(const fp_t *a){
+    return fp_is_equal(&a, &ONE);
+}
+
+void
+fp_batched_inv(fp_t *x, int len)
+{
+    fp_t t1[len], t2[len];
+    fp_t inverse;
+
+    // x = x0,...,xn
+    // t1 = x0, x0*x1, ... ,x0 * x1 * ... * xn
+    fp_copy(&t1[0], &x[0]);
+    for (int i = 1; i < len; i++) {
+        fp_mul(&t1[i], &t1[i - 1], &x[i]);
+    }
+
+    // inverse = 1/ (x0 * x1 * ... * xn)
+    fp_copy(&inverse, &t1[len - 1]);
+    fp_inv(&inverse);
+
+    fp_copy(&t2[0], &inverse);
+    // t2 = 1/ (x0 * x1 * ... * xn), 1/ (x0 * x1 * ... * x(n-1)) , ... , 1/xO
+    for (int i = 1; i < len; i++) {
+        fp_mul(&t2[i], &t2[i - 1], &x[len - i]);
+    }
+
+    fp_copy(&x[0], &t2[len - 1]);
+
+    for (int i = 1; i < len; i++) {
+        fp_mul(&x[i], &t1[i - 1], &t2[len - i - 1]);
+    }
+}
+
+void
+fp_proj_batched_inv(fp_t *x, int len)
+{
+    fp_t t1[len-1], t2[len];
+
+    // x = x0,...,xn
+    // t1 = x0, x0*x1, ... ,x0 * x1 * ... * x(n-1)
+    fp_copy(&t1[0], &x[0]);
+    for (int i = 1; i < len-1; i++) {
+        fp_mul(&t1[i], &t1[i - 1], &x[i]);
+    }
+
+    // coeff = x0 * x1 * ... * xn
+    //fp_copy(&coeff, &t1[len - 1]);
+
+    fp_set_one(&t2[0]);
+    // t2 = 1, xn , x(n-1) * xn, ... , x1 * ... * xn
+    for (int i = 1; i < len; i++) {
+        fp_mul(&t2[i], &t2[i - 1], &x[len - i]);
+    }
+
+    fp_copy(&x[0], &t2[len - 1]);
+
+    for (int i = 1; i < len; i++) {
+        fp_mul(&x[i], &t1[i - 1], &t2[len - i - 1]);
+    }
+}
+
+void
+fp_proj_batched_inv_with_coeff(fp_t *x, fp_t *coeff, int len)
+{
+    fp_t t1[len], t2[len];
+
+    // x = x0,...,xn
+    // t1 = x0, x0*x1, ... ,x0 * x1 * ... * xn
+    fp_copy(&t1[0], &x[0]);
+    for (int i = 1; i < len; i++) {
+        fp_mul(&t1[i], &t1[i - 1], &x[i]);
+    }
+
+    // coeff = x0 * x1 * ... * xn
+    fp_copy(&coeff, &t1[len - 1]);
+
+    fp_set_one(&t2[0]);
+    // t2 = 1, xn , x(n-1) * xn, ... , x1 * ... * xn
+    for (int i = 1; i < len; i++) {
+        fp_mul(&t2[i], &t2[i - 1], &x[len - i]);
+    }
+
+    fp_copy(&x[0], &t2[len - 1]);
+
+    for (int i = 1; i < len; i++) {
+        fp_mul(&x[i], &t1[i - 1], &t2[len - i - 1]);
+    }
+}
+
+void
+fp_print(const char *name, const fp_t *a)
+{
+    printf("%s0x", name);
+
+    uint8_t buf[FP_ENCODED_BYTES];
+    fp_encode(&buf, &a); // Encoding ensures canonical rep
+    for (int i = 0; i < FP_ENCODED_BYTES; i++) {
+        printf("%02x", buf[FP_ENCODED_BYTES - i - 1]);
+    }
+    printf("\n");
+}

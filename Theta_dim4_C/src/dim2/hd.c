@@ -1,5 +1,6 @@
 #include <hd.h>
 #include <assert.h>
+#include <field.h>
 
 void
 double_couple_point(theta_couple_point_t *out, const theta_couple_point_t *in, const theta_couple_curve_t *E1E2)
@@ -90,4 +91,13 @@ copy_bases_to_kernel(theta_kernel_couple_points_t *ker, const ec_basis_t *B1, co
     copy_point(&ker->T1.P2, &B2->P);
     copy_point(&ker->T2.P2, &B2->Q);
     copy_point(&ker->T1m2.P2, &B2->PmQ);
+}
+
+void
+copy_theta_point(theta_point_t *out, const theta_point_t *in)
+{
+    field_copy(&out->x,&in->x);
+    field_copy(&out->y,&in->y);
+    field_copy(&out->z,&in->z);
+    field_copy(&out->t,&in->t);
 }

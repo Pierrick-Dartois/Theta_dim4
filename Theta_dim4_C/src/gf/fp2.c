@@ -230,6 +230,62 @@ fp2_batched_inv(fp2_t *x, int len)
     }
 }
 
+void
+fp2_proj_batched_inv(fp2_t *x, int len)
+{
+    fp2_t t1[len-1], t2[len];
+
+    // x = x0,...,xn
+    // t1 = x0, x0*x1, ... ,x0 * x1 * ... * x(n-1)
+    fp2_copy(&t1[0], &x[0]);
+    for (int i = 1; i < len-1; i++) {
+        fp2_mul(&t1[i], &t1[i - 1], &x[i]);
+    }
+
+    // coeff = x0 * x1 * ... * xn
+    //fp2_copy(&coeff, &t1[len - 1]);
+
+    fp2_set_one(&t2[0]);
+    // t2 = 1, xn , x(n-1) * xn, ... , x1 * ... * xn
+    for (int i = 1; i < len; i++) {
+        fp2_mul(&t2[i], &t2[i - 1], &x[len - i]);
+    }
+
+    fp2_copy(&x[0], &t2[len - 1]);
+
+    for (int i = 1; i < len; i++) {
+        fp2_mul(&x[i], &t1[i - 1], &t2[len - i - 1]);
+    }
+}
+
+void
+fp2_proj_batched_inv_with_coeff(fp2_t *x, fp2_t *coeff, int len)
+{
+    fp2_t t1[len], t2[len];
+    
+    // x = x0,...,xn
+    // t1 = x0, x0*x1, ... ,x0 * x1 * ... * xn
+    fp2_copy(&t1[0], &x[0]);
+    for (int i = 1; i < len; i++) {
+        fp2_mul(&t1[i], &t1[i - 1], &x[i]);
+    }
+
+    // coeff = x0 * x1 * ... * xn
+    fp2_copy(&coeff, &t1[len - 1]);
+
+    fp2_set_one(&t2[0]);
+    // t2 = 1, xn , x(n-1) * xn, ... , x1 * ... * xn
+    for (int i = 1; i < len; i++) {
+        fp2_mul(&t2[i], &t2[i - 1], &x[len - i]);
+    }
+
+    fp2_copy(&x[0], &t2[len - 1]);
+
+    for (int i = 1; i < len; i++) {
+        fp2_mul(&x[i], &t1[i - 1], &t2[len - i - 1]);
+    }
+}
+
 // exponentiation using square and multiply
 // Warning!! Not constant time!
 void

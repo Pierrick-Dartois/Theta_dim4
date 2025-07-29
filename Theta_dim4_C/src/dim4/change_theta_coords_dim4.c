@@ -1,9 +1,9 @@
 #include <change_theta_coords_dim4.h>
-#include <fp.h>
 #include <matrices_mod4.h>
 #include <theta_structure.h>
 #include <theta_structures_dim4.h>
-#include <trees.h>  // For index functions
+#include <fp.h>
+#include <field.h>
 
 static inline unsigned int choose_non_vanishing_index(
     field_t *row, const mod4_mat_4x4_t *C, const mod4_mat_4x4_t *D,

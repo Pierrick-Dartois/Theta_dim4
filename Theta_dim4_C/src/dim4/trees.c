@@ -1,5 +1,6 @@
 #include <matrices_mod4.h>
 #include <trees.h>
+#include <field.h>
 
 void tree_init_gen(tree_t *T) {
   /* Initializing the tree:
@@ -142,16 +143,6 @@ void tree_init_gen(tree_t *T) {
   T1111->n_children = 0;
   // Terminal node
   T1110->children[0] = T1111;
-}
-
-void index_to_multindex_dim4(mod2_vec_4_t res,const unsigned int ind){
-  for (int i = 0; i < 4; i++) {
-    res[i] = (ind >> i) & 1;
-  }
-}
-
-unsigned int multindex_to_index_dim4(const mod2_vec_4_t in){
-  return (in[0]&1) + 2 * (in[1]&1) + 4 * (in[2]&1) + 8 * (in[3]&1);
 }
 
 void find_zeros(int *zeros, const mod4_mat_4x4_t *C, const mod4_mat_4x4_t *D) {

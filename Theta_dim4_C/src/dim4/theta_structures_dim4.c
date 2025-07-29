@@ -1,4 +1,5 @@
 #include <theta_structures_dim4.h>
+#include <field.h>
 
 static inline void theta_copy(theta_point_dim4_t *out, const theta_point_dim4_t *in){
 	field_copy(&out->coords[i],&in->coords[i]);

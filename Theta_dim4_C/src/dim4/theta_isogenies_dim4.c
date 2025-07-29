@@ -1,6 +1,10 @@
 #include <theta_isogenies_dim4.h>
 #include <theta_structures_dim4.h>
 #include <tree.h>
+#include <change_theta_coords_dim4.h>
+#include <hd.h>
+#include <matrices_mod4.h>
+#include <field.h>
 
 /*** Functions for generic isogenies ***/
 
@@ -102,7 +106,7 @@ static void isogeny_compute_dim4(theta_struct_dim4_t *codomain, tree_t *T,
   assert(ind[0] == 15 - n_zeros);
 
   field_t factor;
-  fp_proj_batched_inv_with_coeff(num, &factor, 15 - n_zeros);
+  field_proj_batched_inv_with_coeff(num, &factor, 15 - n_zeros);
 
   codomain->arith_precomp = 0;
   for (int i = 0; i < 16; i++) {
@@ -228,18 +232,35 @@ static void gluing_isogeny_special_eval_T1_dim4(
 }
 
 void gluing_isogeny_surf_compute_dim4(gluing_isog_surf_dim4_t *isog, tree_t *T,
-                                 const theta_point_dim4_t *kernel_8,
+                                 const couple_theta_point_dim2_t *kernel_8,
                                  const int *theta_index_to_kernel_index,
                                  const unsigned int len_ker_8,
                                  const unsigned int n_zeros,
-                                 const unsigned int simple) {
-  isogeny_compute_dim4(&isog->codomain, T, kernel_8,
+                                 const unsigned int simple, 
+                                 const mod4_mat_4x4_t *A,
+                                 const mod4_mat_4x4_t *B,
+                                 const mod4_mat_4x4_t *C,
+                                 const mod4_mat_4x4_t *D,
+                                 const unsigned int is_neg, 
+                                 const int nv_ind) {
+
+  compute_change_theta_coords_dim4(&isog->mat_change_theta_coords, A, B, C, D, is_neg, nv_ind);
+
+  theta_point_dim4_t kernel_8_out[len_ker_8];
+  for(int i=0; i<len_ker_8; i++){
+    couple_theta_point_dim2_to_theta_point_dim4(&kernel_8_out[i], &kernel_8[i],&isog->mat_change_theta_coords);
+  }
+
+  isogeny_compute_dim4(&isog->codomain, T, kernel_8_out,
                        theta_index_to_kernel_index, len_ker_8, n_zeros);
   if (simple) {
-    gluing_isogeny_special_simple_eval_T1_dim4(isog->inv_fT1, &kernel_8[0],
+    gluing_isogeny_special_simple_eval_T1_dim4(isog->inv_fT1, &kernel_8_out[0],
                                                &isog->codomain);
   } else {
-    gluing_isogeny_special_eval_T1_dim4(isog->inv_fT1, &kernel_8[0],
-                                        &kernel_8[5], &isog->codomain);
+    gluing_isogeny_special_eval_T1_dim4(isog->inv_fT1, &kernel_8_out[0],
+                                        &kernel_8_out[5], &isog->codomain);
   }
+
+  copy_theta_point(&isog->T1.P1,&kernel_8[0].P1);
+  copy_theta_point(&isog->T1.P2,&kernel_8[0].P2);
 }

@@ -36,5 +36,8 @@ unsigned int mod2_scal_prod_4(const mod2_vec_4_t *a, const mod2_vec_4_t *b);
 unsigned int mod4_add_2(mod2_vec_2_t *res, const mod2_vec_2_t *a, const mod2_vec_2_t *b);
 unsigned int mod4_add_4(mod2_vec_4_t *res, const mod2_vec_4_t *a, const mod2_vec_4_t *b);
 
+void index_to_multindex_dim4(mod2_vec_4_t res,const unsigned int ind);
+unsigned int multindex_to_index_dim4(const mod2_vec_4_t in);
+
 #endif
 

@@ -23,6 +23,7 @@ void fp_set_zero(fp_t *x);
 void fp_set_one(fp_t *x);
 uint32_t fp_is_equal(const fp_t *a, const fp_t *b);
 uint32_t fp_is_zero(const fp_t *a);
+uint32_t fp_is_one(const fp_t *a);
 void fp_copy(fp_t *out, const fp_t *a);
 
 void fp_encode(void *dst, const fp_t *a);
@@ -44,5 +45,9 @@ void fp_sqrt(fp_t *a);
 void fp_half(fp_t *out, const fp_t *a);
 void fp_exp3div4(fp_t *out, const fp_t *a);
 void fp_div3(fp_t *out, const fp_t *a);
+void fp_batched_inv(fp_t *x, int len);
+void fp_proj_batched_inv(fp_t *x, int len);
+void fp_proj_batched_inv_with_coeff(fp_t *x, fp_t *coeff, int len);
+void fp_print(const char *name, const fp_t *a);
 
 #endif

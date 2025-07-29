@@ -407,6 +407,14 @@ int theta_chain_compute_and_eval_randomized(unsigned n,
 void copy_bases_to_kernel(theta_kernel_couple_points_t *ker, const ec_basis_t *B1, const ec_basis_t *B2);
 
 /**
+ * @brief Copies a theta point.
+ *
+ * @param out Output: the destination of the copy.
+ * @param in Input the theta point to copy.
+ **/
+void copy_theta_point(theta_point_t *out, const theta_point_t *in);
+
+/**
  * @brief Given a couple of points (P1, P2) on a couple of curves (E1, E2)
  * this function tests if both points are of order exactly 2^t
  *

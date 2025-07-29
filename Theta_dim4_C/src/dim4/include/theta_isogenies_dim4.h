@@ -1,8 +1,11 @@
 #ifndef THETA_ISOGENIES_DIM4_H
 #define THETA_ISOGENIES_DIM4_H
 
+#include <field.h>
 #include <theta_structures_dim4.h>
 #include <trees.h>
+#include <matrices_mod4.h>
+#include <hd.h>//from dim2
 #include <theta_structure.h>//from dim2
 
 typedef struct gluing_isog_surf_dim4 {

@@ -1,6 +1,7 @@
 #ifndef CHANGE_THETA_COORDS_DIM4_H
 #define CHANGE_THETA_COORDS_DIM4_H
 
+#include <field.h>
 #include <matrices_mod4.h>
 #include <theta_structure.h>  // Imported from dim2
 #include <theta_structures_dim4.h>

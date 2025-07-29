@@ -321,3 +321,13 @@ unsigned int mod4_add_4(mod2_vec_4_t *res, const mod2_vec_4_t *a, const mod2_vec
     (*res)[i] = ((*a)[i] + (*b)[i])&3;
   }
 }
+
+void index_to_multindex_dim4(mod2_vec_4_t res,const unsigned int ind){
+  for (int i = 0; i < 4; i++) {
+    res[i] = (ind >> i) & 1;
+  }
+}
+
+unsigned int multindex_to_index_dim4(const mod2_vec_4_t in){
+  return (in[0]&1) + 2 * (in[1]&1) + 4 * (in[2]&1) + 8 * (in[3]&1);
+}
