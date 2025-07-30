@@ -400,9 +400,13 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     # `addchain` must be compiled, and so cannot be shipped as-is
-    if not which("addchain"):
+    addchain_binary = which("addchain", path=os.environ['PATH'] + ":../external/addchain/bin")
+    if addchain_binary:
+        print(f"Found addchain binary at {addchain_binary}")
+    if not addchain_binary:
         print("Cannot find `addchain` in `$PATH`. This is necessary for `modarith`")
-        exit(1)
+        print("Installing now to ../external/addchain/bin")
+        os.system("cd ../external/addchain && bash install.sh")
 
     # Bad habit to use `eval`, but since data is not supplied by untrused user it is probably okay
     # Could be replaced with https://stackoverflow.com/a/69540962
@@ -414,7 +418,7 @@ if __name__ == "__main__":
     if args.test:
         addl_args = find_embedding_params(p_shape)
 
-    os.system(f"python ../external/modarith/monty.py 64 {p} > /dev/null 2>&1")
+    os.system(f"PATH=$PATH:../external/addchain/bin python ../external/modarith/monty.py 64 {p} > /dev/null 2>&1")
 
     d_word_params = write_field_file(p)
     write_constants_file(p, args.name, d_word_params, p_shape, args=addl_args)
