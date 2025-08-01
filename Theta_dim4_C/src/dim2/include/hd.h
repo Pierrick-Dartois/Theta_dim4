@@ -12,6 +12,7 @@
 #include <sqisign_namespace.h>
 #include <ec.h>
 #include <stdio.h>
+#include <field.h>
 
 /** @defgroup hd_module Abelian surfaces and their isogenies
  * @{
@@ -132,6 +133,7 @@ typedef struct theta_structure
 {
     theta_point_t null_point;
     bool precomputation;
+    bool semi_precomputation;
 
     // Eight precomputed values used for doubling and
     // (2,2)-isogenies.
@@ -413,6 +415,14 @@ void copy_bases_to_kernel(theta_kernel_couple_points_t *ker, const ec_basis_t *B
  * @param in Input the theta point to copy.
  **/
 void copy_theta_point(theta_point_t *out, const theta_point_t *in);
+
+/**
+ * @brief Copies a theta structure.
+ *
+ * @param out Output: the destination of the copy.
+ * @param in Input the theta structure to copy.
+ **/
+void copy_theta_structure(theta_structure_t *out, const theta_structure_t *in);
 
 /**
  * @brief Given a couple of points (P1, P2) on a couple of curves (E1, E2)

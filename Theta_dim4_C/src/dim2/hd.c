@@ -101,3 +101,20 @@ copy_theta_point(theta_point_t *out, const theta_point_t *in)
     field_copy(&out->z,&in->z);
     field_copy(&out->t,&in->t);
 }
+
+void 
+copy_theta_structure(theta_structure_t *out, const theta_structure_t *in){
+    copy_theta_point(&out->null_point,&in->null_point);
+    out->precomputation = in->precomputation;
+    out->semi_precomputation = in->semi_precomputation;
+
+    field_copy(&out->XYZ0,&in->XYZ0);
+    field_copy(&out->YZT0,&in->YZT0);
+    field_copy(&out->XZT0,&in->XZT0);
+    field_copy(&out->XYT0,&in->XYT0);
+
+    field_copy(&out->xyz0,&in->xyz0);
+    field_copy(&out->yzt0,&in->yzt0);
+    field_copy(&out->xzt0,&in->xzt0);
+    field_copy(&out->xyt0,&in->xyt0);
+}

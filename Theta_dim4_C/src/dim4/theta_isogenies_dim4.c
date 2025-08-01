@@ -141,6 +141,127 @@ void gen_isogeny_eval_dim4(theta_point_dim4_t *image,
 
 /*** Functions for gluing isogenies ***/
 
+// support_fT[i] contains all indices j such that 
+// the permutation j --> (i+1)^j is the product
+// of the transpositions (j,(i+1)^j). 
+const unsigned int support_fT[15][8] = {{0,2,4,6,8,10,12,14},
+{0,1,4,5,8,9,12,13},
+{0,1,4,5,8,9,12,13},
+{0,1,2,3,8,9,10,11},
+{0,1,2,3,8,9,10,11},
+{0,1,2,3,8,9,10,11},
+{0,1,2,3,8,9,10,11},
+{0,1,2,3,4,5,6,7},
+{0,1,2,3,4,5,6,7},
+{0,1,2,3,4,5,6,7},
+{0,1,2,3,4,5,6,7},
+{0,1,2,3,4,5,6,7},
+{0,1,2,3,4,5,6,7},
+{0,1,2,3,4,5,6,7},
+{0,1,2,3,4,5,6,7}}
+
+static inline unsigned int find_double_non_zero(const field_t *coords, 
+  const unsigned int ind_trans) {
+  unsigned int res = 0, ind_i;
+  for (int i = 0; i < 8; i++) {
+    ind_i = support_fT[ind_trans-1][i];
+    res = res ^ (((!field_is_zero(&coords[ind_i])) & (!field_is_zero(&coords[ind_i ^ ind_trans]))) &
+                 (res ^ ind_i));
+  }
+  return res;
+}
+
+static inline unsigned int find_non_zero(const field_t *coords,
+  const unsigned int ind, const unsigned int *ind_trans, 
+  const unsigned int len_trans) {
+  unsigned int res = 0;
+  for (int l = 0; l<len_trans; l++) {
+    res = res ^ ((!field_is_zero(&coords[ind ^ ind_trans[l]])) & (res^l));
+  }
+  return res;
+}
+
+static void gluing_isogeny_special_eval_T_dim4(field_t *inv_fT, 
+  const theta_point_dim4_t *T, 
+  const unsigned int ind_T,
+  const theta_point_dim4_t *translates,
+  const unsigned int *ind_trans,
+  const unsigned int len_trans,
+  const theta_struct_dim4_t *codomain){
+  if (len_trans == 0) {
+    theta_dim4_sq(inv_fT, T->coords);
+    hadamard_dim4(inv_fT, inv_fT);
+
+    uint32_t ctrl, ind_i;
+    field_t inv_fT_supp[8], factor;
+    for (int i = 0; i < 8; i++) {
+      ind_i = support_fT[ind_T-1][i];
+      ctrl = field_is_zero(&codomain->inv_dual_null_point[ind_i]);
+      // If U_{\chi}(0_B) = 0, chose U_{\chi\chi_{ind_T}(0_B) instead
+      field_select(&factor, &codomain->inv_dual_null_point[ind_i],
+        &codomain->inv_dual_null_point[ind_i ^ ind_T], ctrl);
+      field_select(&inv_fT_supp[i], &inv_fT[ind_i], &inv_fT[ind_i ^ ind_T], ctrl);
+      field_mul(&inv_fT_supp[i], &inv_fT_supp[i], &factor);
+    }
+
+    field_proj_batched_inv(inv_fT_supp, 8);
+
+    for (int i = 0; i < 8; i++) {
+      ind_i = support_fT[ind_T-1][i];
+      field_copy(&inv_fT[ind_i], &inv_fT_supp[i]);
+      field_copy(&inv_fT[ind_i ^ ind_T], &inv_fT_supp[i]);
+    }
+  }
+  else {
+    theta_dim4_sq(inv_fT, T->coords);
+    hadamard_dim4(inv_fT, inv_fT);
+
+    field_t HS_trans[len_trans][16], num[len_trans], den[len_trans];
+    unsigned int ind_nz;
+    for (int l=0; l<len_trans; l++) {
+      theta_dim4_sq(HS_trans[l], translates[l].coords);
+      hadamard_dim4(HS_trans[l], HS_trans[l]);
+
+      ind_nz = find_double_non_zero(codomain->inv_dual_null_point, ind_trans[l]);
+      field_mul(&num[l],&inv_fT[ind_nz ^ ind_trans[l]],
+        &codomain->inv_dual_null_point[ind_nz ^ ind_trans[l]]);
+      field_mul(&den[l],&HS_trans[l][ind_nz],&codomain->inv_dual_null_point[ind_nz]);
+    }
+
+    field_t factors_l[len_trans], factor;
+    field_proj_batched_inv_with_coeff(factors_l, &factor, len_trans);
+    for (int l=0; l<len_trans; l++){
+      field_mul(&factors_l[l],&factors_l[l],&factor);
+    }
+
+    field_t inv_fT_supp[8], factor1, factor2;
+    unsigned int ctrl, l_nz;
+    for(int i=0; i<8; i++) {
+      ind_i = support_fT[ind_T-1][i];
+      ctrl = field_is_zero(&codomain->inv_dual_null_point[ind_i]);
+      l_nz = find_non_zero(codomain->inv_dual_null_point,ind_i,
+        ind_trans,len_trans);
+      field_select(&factor1,&factor,&factors_l[l_nz],ctrl);
+      field_select(&factor2,&codomain->inv_dual_null_point[ind_i],
+        &codomain->inv_dual_null_point[ind_i^ind_trans[l_nz]],ctrl);
+      field_select(&inv_fT_supp[i], &inv_fT[ind_i], 
+        &HS_trans[l_nz][ind_i^ind_trans[l_nz]],ctrl);
+      field_mul(&inv_fT_supp[i],&inv_fT_supp[i],&factor1);
+      field_mul(&inv_fT_supp[i],&inv_fT_supp[i],&factor2);
+    }
+
+    field_proj_batched_inv(inv_fT_supp, 8);
+
+    for (int i = 0; i < 8; i++) {
+      ind_i = support_fT[ind_T-1][i];
+      field_copy(&inv_fT[ind_i], &inv_fT_supp[i]);
+      field_copy(&inv_fT[ind_i ^ ind_T], &inv_fT_supp[i]);
+    }
+  }
+}
+
+/* Deprecated
+
 static void gluing_isogeny_special_simple_eval_T1_dim4(
     field_t *inv_fT1, const theta_point_dim4_t *T1,
     const theta_struct_dim4_t *codomain) {
@@ -231,18 +352,23 @@ static void gluing_isogeny_special_eval_T1_dim4(
   }
 }
 
-void gluing_isogeny_surf_compute_dim4(gluing_isog_surf_dim4_t *isog, tree_t *T,
+*/
+
+void gluing_isogeny_surf_compute_dim4(gluing_isog_surf_dim4_t *isog, 
+                                 const couple_theta_struct_dim2_t *domain, tree_t *tree,
                                  const couple_theta_point_dim2_t *kernel_8,
                                  const int *theta_index_to_kernel_index,
                                  const unsigned int len_ker_8,
-                                 const unsigned int n_zeros,
-                                 const unsigned int simple, 
+                                 const unsigned int n_zeros, 
                                  const mod4_mat_4x4_t *A,
                                  const mod4_mat_4x4_t *B,
                                  const mod4_mat_4x4_t *C,
                                  const mod4_mat_4x4_t *D,
                                  const unsigned int is_neg, 
-                                 const int nv_ind) {
+                                 const int nv_ind,
+                                 const unsigned int ind_T,
+                                 const unsigned int *ind_trans,
+                                 const unsigned int len_trans) {
 
   compute_change_theta_coords_dim4(&isog->mat_change_theta_coords, A, B, C, D, is_neg, nv_ind);
 
@@ -251,16 +377,49 @@ void gluing_isogeny_surf_compute_dim4(gluing_isog_surf_dim4_t *isog, tree_t *T,
     couple_theta_point_dim2_to_theta_point_dim4(&kernel_8_out[i], &kernel_8[i],&isog->mat_change_theta_coords);
   }
 
-  isogeny_compute_dim4(&isog->codomain, T, kernel_8_out,
+  isogeny_compute_dim4(&isog->codomain, tree, kernel_8_out,
                        theta_index_to_kernel_index, len_ker_8, n_zeros);
-  if (simple) {
-    gluing_isogeny_special_simple_eval_T1_dim4(isog->inv_fT1, &kernel_8_out[0],
-                                               &isog->codomain);
-  } else {
-    gluing_isogeny_special_eval_T1_dim4(isog->inv_fT1, &kernel_8_out[0],
-                                        &kernel_8_out[5], &isog->codomain);
+  
+  theta_point_dim4_t T, translates[len_trans];
+  copy_theta_point_dim4(&T,&kernel_8_out[theta_index_to_kernel_index[ind_T]]);
+  for(int l=0; l<len_trans; l++){
+    copy_theta_point_dim4(&translates[l],
+      &kernel_8_out[theta_index_to_kernel_index[ind_T^ind_trans[l]]]); 
   }
 
-  copy_theta_point(&isog->T1.P1,&kernel_8[0].P1);
-  copy_theta_point(&isog->T1.P2,&kernel_8[0].P2);
+  gluing_isogeny_special_eval_T_dim4(isog->inv_fT, &T, 
+    ind_T, translates,ind_trans,len_trans,
+    &isog->codomain);
+
+  copy_theta_point(&isog->T.P1,&kernel_8[theta_index_to_kernel_index[ind_T]].P1);
+  copy_theta_point(&isog->T.P2,&kernel_8[theta_index_to_kernel_index[ind_T]].P2);
+
+  copy_theta_structure(&isog->domain.A1,&domain->A1);
+  copy_theta_structure(&isog->domain.A2,&domain->A2);
+}
+
+void gluing_isogeny_surf_eval_dim4(theta_point_dim4_t *image,
+                           const couple_theta_point_dim2_t *point,
+                           const couple_theta_point_dim2_t *trans,
+                           gluing_isog_surf_dim4_t *isog){
+  // trans = point + T and we compute point - T
+
+  couple_theta_point_dim2_t couple_PmT;
+  theta_point_dim4_t PpT, PmT;
+
+  diff_add_point(&couple_PmT->P1, &isog->domain.A1, &point->P1, 
+    &isog->T.P1, &trans->P1);
+  diff_add_point(&couple_PmT->P2, &isog->domain.A2, &point->P2, 
+    &isog->T.P2, &trans->P2);
+  couple_theta_point_dim2_to_theta_point_dim4(&PpT, trans, &isog->mat_change_theta_coords);
+  couple_theta_point_dim2_to_theta_point_dim4(&PmT, &couple_PmT, &isog->mat_change_theta_coords);
+
+  for (int i=0; i<16; i++) {
+    field_mul(&image->coords[i],&PpT->coords[i],&PmT->coords[i]);
+  }
+  hadamard_dim4(image->coords, image->coords);
+
+  for (int i=0; i<16; i++) {
+    field_mul(&image->coords[i],&image->coords[i],&isog->inv_fT[i]);
+  }
 }

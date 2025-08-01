@@ -145,7 +145,7 @@ void tree_init_gen(tree_t *T) {
   T1110->children[0] = T1111;
 }
 
-void find_zeros(int *zeros, const mod4_mat_4x4_t *C, const mod4_mat_4x4_t *D) {
+void find_zeros_surf(int *zeros, const mod4_mat_4x4_t *C, const mod4_mat_4x4_t *D) {
   mod4_mat_4x4_t tDC;
 
   mod4_mat_4x4_transpose(&tDC, D);
@@ -214,6 +214,223 @@ void find_zeros(int *zeros, const mod4_mat_4x4_t *C, const mod4_mat_4x4_t *D) {
   		mod2_mat_4x4_eval(&multind, D, &multind);
   		zeros[i] = multindex_to_index_dim4(multind);
   	}
+  }
+}
+
+void find_zeros_EC(int *zeros, const mod4_mat_4x4_t *C,
+                   const mod4_mat_4x4_t *D) {
+  mod4_mat_4x4_t tDC;
+
+  mod4_mat_4x4_transpose(&tDC, D);
+  mod4_mat_4x4_mul(&tDC, &tD, C);
+
+  int c = (tDC[0][1] & 1) + 2 * (tDC[0][2] & 1) + 4 * (tDC[0][3] & 1) +
+          8 * (tDC[1][2] & 1) + 16 * (tDC[1][3] & 1) + 32 * (tDC[2][3] & 1);
+
+  // Finding the zeros of the normalised form [[I4, tDC],[0, I4]].
+  switch (c) {
+    case 1:
+      zeros = {3, 7, 11, 15, -1, -1, -1, -1};
+      break;
+    case 2:
+      zeros = {5, 7, 13, 15, -1, -1, -1, -1};
+      break;
+    case 3:
+      zeros = {3, 5, 7, 11, 13, 15, -1, -1};
+      break;
+    case 4:
+      zeros = {9, 11, 13, 15, -1, -1, -1, -1};
+      break;
+    case 5:
+      zeros = {3, 7, 9, 11, 13, 15, -1, -1};
+      break;
+    case 6:
+      zeros = {5, 7, 9, 11, 13, 15, -1, -1};
+      break;
+    case 7:
+      zeros = {3, 5, 7, 9, 11, 13, 15, -1};
+      break;
+    case 8:
+      zeros = {6, 7, 14, 15, -1, -1, -1, -1};
+      break;
+    case 9:
+      zeros = {3, 6, 7, 11, 14, 15, -1, -1};
+      break;
+    case 10:
+      zeros = {5, 6, 7, 13, 14, 15, -1, -1};
+      break;
+    case 11:
+      zeros = {3, 5, 6, 11, 13, 14, -1, -1};
+      break;
+    case 12:
+      zeros = {6, 7, 9, 11, 13, 14, 15, -1};
+      break;
+    case 13:
+      zeros = {3, 6, 7, 9, 11, 13, 14, 15};
+      break;
+    case 14:
+      zeros = {5, 6, 7, 9, 11, 13, 14, 15};
+      break;
+    case 15:
+      zeros = {3, 5, 6, 9, 11, 13, 14, 15};
+      break;
+    case 16:
+      zeros = {10, 11, 14, 15, -1, -1, -1, -1};
+      break;
+    case 17:
+      zeros = {3, 7, 10, 11, 14, 15, -1, -1};
+      break;
+    case 18:
+      zeros = {5, 7, 10, 11, 13, 14, 15, -1};
+      break;
+    case 19:
+      zeros = {3, 5, 7, 10, 11, 13, 14, 15};
+      break;
+    case 20:
+      zeros = {9, 10, 11, 13, 14, 15, -1, -1};
+      break;
+    case 21:
+      zeros = {3, 7, 9, 10, 13, 14, -1, -1};
+      break;
+    case 22:
+      zeros = {5, 7, 9, 10, 11, 13, 14, 15};
+      break;
+    case 23:
+      zeros = {3, 5, 7, 9, 10, 13, 14, 15};
+      break;
+    case 24:
+      zeros = {6, 7, 10, 11, 14, 15, -1, -1};
+      break;
+    case 25:
+      zeros = {3, 6, 7, 10, 11, 14, 15, -1};
+      break;
+    case 26:
+      zeros = {5, 6, 7, 10, 11, 13, 14, 15};
+      break;
+    case 27:
+      zeros = {3, 5, 6, 10, 11, 13, 14, 15};
+      break;
+    case 28:
+      zeros = {6, 7, 9, 10, 11, 13, 14, 15};
+      break;
+    case 29:
+      zeros = {3, 6, 7, 9, 10, 13, 14, 15};
+      break;
+    case 30:
+      zeros = {5, 6, 7, 9, 10, 11, 13, 14};
+      break;
+    case 31:
+      zeros = {3, 5, 6, 9, 10, 13, 14, 15};
+      break;
+    case 32:
+      zeros = {12, 13, 14, 15, -1, -1, -1, -1};
+      break;
+    case 33:
+      zeros = {3, 7, 11, 12, 13, 14, 15, -1};
+      break;
+    case 34:
+      zeros = {5, 7, 12, 13, 14, 15, -1, -1};
+      break;
+    case 35:
+      zeros = {3, 5, 7, 11, 12, 13, 14, 15};
+      break;
+    case 36:
+      zeros = {9, 11, 12, 13, 14, 15, -1, -1};
+      break;
+    case 37:
+      zeros = {3, 7, 9, 11, 12, 13, 14, 15};
+      break;
+    case 38:
+      zeros = {5, 7, 9, 11, 12, 14, -1, -1};
+      break;
+    case 39:
+      zeros = {3, 5, 7, 9, 11, 12, 14, 15};
+      break;
+    case 40:
+      zeros = {6, 7, 12, 13, 14, 15, -1, -1};
+      break;
+    case 41:
+      zeros = {3, 6, 7, 11, 12, 13, 14, 15};
+      break;
+    case 42:
+      zeros = {5, 6, 7, 12, 13, 14, 15, -1};
+      break;
+    case 43:
+      zeros = {3, 5, 6, 11, 12, 13, 14, 15};
+      break;
+    case 44:
+      zeros = {6, 7, 9, 11, 12, 13, 14, 15};
+      break;
+    case 45:
+      zeros = {3, 6, 7, 9, 11, 12, 13, 14};
+      break;
+    case 46:
+      zeros = {5, 6, 7, 9, 11, 12, 14, 15};
+      break;
+    case 47:
+      zeros = {3, 5, 6, 9, 11, 12, 14, 15};
+      break;
+    case 48:
+      zeros = {10, 11, 12, 13, 14, 15, -1, -1};
+      break;
+    case 49:
+      zeros = {3, 7, 10, 11, 12, 13, 14, 15};
+      break;
+    case 50:
+      zeros = {5, 7, 10, 11, 12, 13, 14, 15};
+      break;
+    case 51:
+      zeros = {3, 5, 7, 10, 11, 12, 13, 14};
+      break;
+    case 52:
+      zeros = {9, 10, 11, 12, 13, 14, 15, -1};
+      break;
+    case 53:
+      zeros = {3, 7, 9, 10, 12, 13, 14, 15};
+      break;
+    case 54:
+      zeros = {5, 7, 9, 10, 11, 12, 14, 15};
+      break;
+    case 55:
+      zeros = {3, 5, 7, 9, 10, 12, 14, 15};
+      break;
+    case 56:
+      zeros = {6, 7, 10, 11, 12, 13, -1, -1};
+      break;
+    case 57:
+      zeros = {3, 6, 7, 10, 11, 12, 13, 15};
+      break;
+    case 58:
+      zeros = {5, 6, 7, 10, 11, 12, 13, 15};
+      break;
+    case 59:
+      zeros = {3, 5, 6, 10, 11, 12, 13, 15};
+      break;
+    case 60:
+      zeros = {6, 7, 9, 10, 11, 12, 13, 15};
+      break;
+    case 61:
+      zeros = {3, 6, 7, 9, 10, 12, 13, 15};
+      break;
+    case 62:
+      zeros = {5, 6, 7, 9, 10, 11, 12, 15};
+      break;
+    case 63:
+      zeros = {3, 5, 6, 9, 10, 12, 15, -1};
+      break;
+    default:
+      zeros = {-1, -1, -1, -1, -1, -1, -1, -1};
+  }
+
+  mod2_vec_4_t multind;
+
+  // Translating the zero values (depending on D).
+  for (int i = 0; i < 6; i++) {
+    if (zeros[i] != -1) {
+      index_to_multindex_dim4(multind, zeros[i]);
+      mod2_mat_4x4_eval(&multind, D, &multind);
+      zeros[i] = multindex_to_index_dim4(multind);
+    }
   }
 }
 

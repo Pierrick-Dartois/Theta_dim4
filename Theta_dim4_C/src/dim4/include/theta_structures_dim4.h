@@ -25,8 +25,8 @@ typedef struct couple_theta_point_dim2 {
 } couple_theta_point_dim2_t;
 
 typedef struct couple_theta_struct_dim2 {
-  theta_structure_t theta1;
-  theta_structure_t theta2;
+  theta_structure_t A1;
+  theta_structure_t A2;
 } couple_theta_struct_dim2_t;
 
 void hadamard_dim4(field_t *out, const field_t *in);
@@ -36,5 +36,7 @@ void theta_double(theta_point_dim4_t *out, const theta_point_dim4_t *in,
                   theta_struct_dim4_t *theta_struct);
 void theta_double_iter(theta_point *out, const theta_point_dim4_t *in,
                        theta_struct_dim4_t *theta_struct, int n);
+void copy_theta_point_dim4(theta_point_dim4_t *out, 
+  const theta_point_dim4_t *in);
 
 #endif

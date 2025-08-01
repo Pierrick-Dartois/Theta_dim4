@@ -106,6 +106,18 @@ void theta_precomputation(theta_structure_t *A);
 void double_point(theta_point_t *out, theta_structure_t *A, const theta_point_t *in);
 
 /**
+ * @brief Compute the differential addition of two theta points in on the theta struc A
+ *
+ * @param out Output: the result theta_point (P+Q)
+ * @param A a theta structure
+ * @param P a theta point in the theta structure A
+ * @param Q a theta point in the theta structure A
+ * @param PQ a theta point in the theta structure A (P-Q)
+ */
+void diff_add_point(theta_point_t *out, theta_structure_t *A, const theta_point_t *P, 
+    const theta_point_t *Q, const theta_point_t *PQ);
+
+/**
  * @brief Compute the iterated double of the theta point in on the theta struc A
  *
  * @param out Output: the theta_point

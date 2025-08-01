@@ -5,6 +5,10 @@ static inline void theta_copy(theta_point_dim4_t *out, const theta_point_dim4_t 
 	field_copy(&out->coords[i],&in->coords[i]);
 }
 
+void copy_theta_point_dim4(theta_point_dim4_t *out, const theta_point_dim4_t *in){
+  theta_copy(out, in);
+}
+
 static inline void hadamard_2(field_t *out, const field_t *in) {
   field_add(&out[0], &in[0], &in[1]);
   field_sub(&out[1], &in[0], &in[1]);

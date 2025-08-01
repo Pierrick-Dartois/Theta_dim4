@@ -9,11 +9,12 @@
 #include <theta_structure.h>//from dim2
 
 typedef struct gluing_isog_surf_dim4 {
+  couple_theta_struct_dim2_t domain;
   theta_struct_dim4_t codomain;
-  field_t inv_fT1[16];
-  couple_theta_struct_dim2_t T1;
+  field_t inv_fT[16];
+  couple_theta_struct_dim2_t T;
   field_mat_16x16_t mat_change_theta_coords;
-} gluing_isog_dim4_t;
+} gluing_isog_surf_dim4_t;
 
 void gen_isogeny_compute_dim4(theta_struct_dim4_t *codomain,
                               const theta_point_dim4_t *kernel_8, tree_t *T_gen,

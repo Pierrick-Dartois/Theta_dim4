@@ -14,7 +14,8 @@ typedef struct tree {
 } tree_t;
 
 void tree_init_gen(tree_t *T);
-void find_zeros(int *zeros, const mod4_mat_4x4_t *C, const mod4_mat_4x4_t *D);
+void find_zeros_surf(int *zeros, const mod4_mat_4x4_t *C, const mod4_mat_4x4_t *D);
+void find_zeros_EC(int *zeros, const mod4_mat_4x4_t *C, const mod4_mat_4x4_t *D);
 unsigned int fill_in_adj_matrix(unsigned int **mat,  const int *zeros);
 void build_tree_from_adj_matrix(tree_t *T, const unsigned int **mat, const int root);
 void tree_finalize(tree_t *T);

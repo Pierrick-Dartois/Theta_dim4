@@ -30,6 +30,28 @@ theta_precomputation(theta_structure_t *A)
     A->precomputation = true;
 }
 
+static inline void
+theta_semi_precomputation(theta_structure_t *A)
+{
+
+    if (A->semi_precomputation) {
+        return;
+    }
+
+    theta_point_t A_dual;
+    to_squared_theta(&A_dual, &A->null_point);
+
+    fp2_t t1, t2;
+    fp2_mul(&t1, &A_dual.x, &A_dual.y);
+    fp2_mul(&t2, &A_dual.z, &A_dual.t);
+    fp2_mul(&A->XYZ0, &t1, &A_dual.z);
+    fp2_mul(&A->XYT0, &t1, &A_dual.t);
+    fp2_mul(&A->YZT0, &t2, &A_dual.y);
+    fp2_mul(&A->XZT0, &t2, &A_dual.x);
+
+    A->semi_precomputation = true;
+}
+
 void
 double_point(theta_point_t *out, theta_structure_t *A, const theta_point_t *in)
 {
@@ -53,6 +75,48 @@ double_point(theta_point_t *out, theta_structure_t *A, const theta_point_t *in)
     fp2_mul(&out->y, &out->y, &A->xzt0);
     fp2_mul(&out->z, &out->z, &A->xyt0);
     fp2_mul(&out->t, &out->t, &A->xyz0);
+}
+
+void
+diff_add_point(theta_point_t *out, theta_structure_t *A, const theta_point_t *P, 
+    const theta_point_t *Q, const theta_point_t *PQ)
+{
+    theta_point_t HSP, HSQ;
+
+    to_squared_theta(&HSP, P);
+    to_squared_theta(&HSQ, Q);
+
+    field_mul(&out->x, &HSP.x, &HSQ.x);
+    field_mul(&out->y, &HSP.y, &HSQ.y);
+    field_mul(&out->z, &HSP.z, &HSQ.z);
+    field_mul(&out->t, &HSP.t, &HSQ.t);
+
+    if (!A->semi_precomputation) {// TODO: less precomp
+        theta_semi_precomputation(A);
+    }
+    field_mul(&out->x, &out->x, &A->YZT0);
+    field_mul(&out->y, &out->y, &A->XZT0);
+    field_mul(&out->z, &out->z, &A->XYT0);
+    field_mul(&out->t, &out->t, &A->XYZ0);
+
+    hadamard(out, out);
+
+    field_t xy, zt; 
+
+    field_mul(&xy, &PQ->x, &PQ->y);
+    field_mul(&zt, &PQ->z, &PQ->t);
+
+    field_mul(&out->x, &out->x, &PQ->y);
+    field_mul(&out->x, &out->x, &zt);
+
+    field_mul(&out->y, &out->y, &PQ->x);
+    field_mul(&out->y, &out->y, &zt);
+
+    field_mul(&out->z, &out->z, &PQ->t);
+    field_mul(&out->z, &out->z, &xy);
+
+    field_mul(&out->t, &out->t, &PQ->z);
+    field_mul(&out->t, &out->t, &xy);
 }
 
 void
