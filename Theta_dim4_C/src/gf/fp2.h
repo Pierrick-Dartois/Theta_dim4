@@ -30,6 +30,7 @@ uint32_t fp2_is_square(const fp2_t *x);
 void fp2_sqrt(fp2_t *x);
 uint32_t fp2_sqrt_verify(fp2_t *a);
 void fp2_half(fp2_t *x, const fp2_t *y);
+void fp2_div3(fp2_t *out, const fp2_t *a);
 void fp2_batched_inv(fp2_t *x, int len);
 void fp2_proj_batched_inv(fp2_t *x, int len);
 void fp2_proj_batched_inv_with_coeff(fp2_t *x, fp2_t *coeff, int len);

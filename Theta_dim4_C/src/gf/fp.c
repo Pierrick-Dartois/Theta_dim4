@@ -20,6 +20,23 @@ fp_is_one(const fp_t *a){
 }
 
 void
+fp_add_one(fp_t *x, const fp_t *y){
+    fp_add(x,y,&ONE);
+}
+
+uint32_t
+fp_sqrt_verify(fp_t *a)
+{
+    fp_t t0, t1;
+
+    fp_copy(&t0, a);
+    fp_sqrt(a);
+    fp_sqr(&t1, a);
+
+    return (fp_is_equal(&t0, &t1));
+}
+
+void
 fp_batched_inv(fp_t *x, int len)
 {
     fp_t t1[len], t2[len];

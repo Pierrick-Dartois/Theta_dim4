@@ -34,6 +34,7 @@ void fp_select(fp_t *d, const fp_t *a0, const fp_t *a1, uint32_t ctl);
 void fp_cswap(fp_t *a, fp_t *b, uint32_t ctl);
 
 void fp_add(fp_t *out, const fp_t *a, const fp_t *b);
+void fp_add_one(fp_t *x, const fp_t *y);
 void fp_sub(fp_t *out, const fp_t *a, const fp_t *b);
 void fp_neg(fp_t *out, const fp_t *a);
 void fp_sqr(fp_t *out, const fp_t *a);
@@ -42,6 +43,7 @@ void fp_mul(fp_t *out, const fp_t *a, const fp_t *b);
 void fp_inv(fp_t *x);
 uint32_t fp_is_square(const fp_t *a);
 void fp_sqrt(fp_t *a);
+uint32_t fp_sqrt_verify(fp_t *a);
 void fp_half(fp_t *out, const fp_t *a);
 void fp_exp3div4(fp_t *out, const fp_t *a);
 void fp_div3(fp_t *out, const fp_t *a);

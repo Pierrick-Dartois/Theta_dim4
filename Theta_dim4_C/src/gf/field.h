@@ -17,6 +17,7 @@
 #define field_select fp_select
 #define field_cswap fp_cswap
 #define field_add fp_add
+#define field_add_one fp_add_one
 #define field_sub fp_sub
 #define field_neg fp_neg
 #define field_mul fp_mul
@@ -24,9 +25,10 @@
 #define field_inv fp_inv
 #define field_is_square fp_is_square
 #define field_sqrt fp_sqrt
+#define field_sqrt_verify fp_sqrt_verify // Undefined
 #define field_half fp_half
 // void fp_exp3div4(fp_t *out, const fp_t *a);
-// void fp_div3(fp_t *out, const fp_t *a);
+#define field_div3 fp_div3
 #define field_batched_inv fp_batched_inv
 #define field_proj_batched_inv fp_proj_batched_inv
 #define field_proj_batched_inv_with_coeff fp_proj_batched_inv_with_coeff
@@ -48,7 +50,7 @@
 #define field_select fp2_select
 #define field_cswap fp2_cswap
 #define field_add fp2_add
-// void fp2_add_one(fp2_t *x, const fp2_t *y);
+#define field_add_one fp2_add_one
 #define field_sub fp2_sub
 #define field_neg fp2_neg
 #define field_mul fp2_mul
@@ -56,8 +58,9 @@
 #define field_inv fp2_inv
 #define field_is_square fp2_is_square
 #define field_sqrt fp2_sqrt
-// uint32_t fp2_sqrt_verify(fp2_t *a);
+#define field_sqrt_verify fp2_sqrt_verify
 #define field_half fp2_half
+#define field_div3 fp2_div3
 #define field_batched_inv fp2_batched_inv
 #define field_proj_batched_inv fp2_proj_batched_inv
 #define field_proj_batched_inv_with_coeff fp2_proj_batched_inv_with_coeff

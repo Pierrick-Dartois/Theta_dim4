@@ -200,6 +200,13 @@ fp2_half(fp2_t *x, const fp2_t *y)
     fp_half(&(x->im), &(y->im));
 }
 
+void 
+fp2_div3(fp2_t *out, const fp2_t *a) 
+{
+    fp_div3(&(out->re),&(in->re));
+    fp_div3(&(out->im),&(in->im));
+}
+
 void
 fp2_batched_inv(fp2_t *x, int len)
 {
