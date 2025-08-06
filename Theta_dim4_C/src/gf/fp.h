@@ -2,14 +2,14 @@
 #define FP_H
 
 //////////////////////////////////////////////// NOTE: this is placed here for now
-#include <sqisign_namespace.h>
+//#include <sqisign_namespace.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <stdbool.h>
 #include <stddef.h>
 #include <string.h>
 #include <tutil.h>
-#include <fp_constants.h>
+#include <constants.h>
 
 typedef digit_t fp_t[NWORDS_FIELD]; // Datatype for representing field elements
 

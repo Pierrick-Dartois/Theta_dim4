@@ -1,6 +1,6 @@
 
 // Automatically generated modular arithmetic C code
-// Command line : python ../modarith/monty.py 64
+// Command line : python ../external/modarith/monty.py 64
 // 2261564242916331941866620800950935700259179388000792266395655937654553313279
 // Python Script by Mike Scott (Technology Innovation Institute, UAE, 2025)
 
@@ -545,15 +545,12 @@ static int modcmp(const spint *a, const spint *b) {
   return eq;
 }
 
-
 /******************************************************************************
 API functions calling generated code above
 ******************************************************************************/
 
 const digit_t ZERO[NWORDS_FIELD] = {0x0, 0x0, 0x0, 0x0, 0x0};
-
 const digit_t ONE[NWORDS_FIELD] = {0x19, 0x0, 0x0, 0x0, 0x300000000000};
-
 static const digit_t TWO_INV[NWORDS_FIELD] = {0xc, 0x0, 0x0, 0x0, 0x400000000000};
 
 static const digit_t THREE_INV[NWORDS_FIELD] = {0x555555555555d, 0x2aaaaaaaaaaaa, 0x5555555555555, 0x2aaaaaaaaaaaa, 0x455555555555};
@@ -683,3 +680,4 @@ fp_decode(fp_t *d, const void *src)
 {
     return modimp(src,d);
 }
+

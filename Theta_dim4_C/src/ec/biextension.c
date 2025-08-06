@@ -2,6 +2,7 @@
 #include <assert.h>
 #include <inttypes.h>
 #include <mp.h>
+#include <stdio.h>
 
 /*
  * We implement the biextension arithmetic by using the cubical torsor
@@ -19,21 +20,21 @@
 // costs 3M + 2S + 2a + 2s
 
 static void
-cubicalADD(ec_point_t *R, const ec_point_t *P, const ec_point_t *Q, const fp2_t *ixPQ)
+cubicalADD(ec_point_t *R, const ec_point_t *P, const ec_point_t *Q, const field_t *ixPQ)
 {
-    fp2_t t0, t1, t2, t3;
+    field_t t0, t1, t2, t3;
 
-    fp2_add(&t0, &P->x, &P->z);
-    fp2_sub(&t1, &P->x, &P->z);
-    fp2_add(&t2, &Q->x, &Q->z);
-    fp2_sub(&t3, &Q->x, &Q->z);
-    fp2_mul(&t0, &t0, &t3);
-    fp2_mul(&t1, &t1, &t2);
-    fp2_add(&t2, &t0, &t1);
-    fp2_sub(&t3, &t0, &t1);
-    fp2_sqr(&R->z, &t3);
-    fp2_sqr(&t2, &t2);
-    fp2_mul(&R->x, ixPQ, &t2);
+    field_add(&t0, &P->x, &P->z);
+    field_sub(&t1, &P->x, &P->z);
+    field_add(&t2, &Q->x, &Q->z);
+    field_sub(&t3, &Q->x, &Q->z);
+    field_mul(&t0, &t0, &t3);
+    field_mul(&t1, &t1, &t2);
+    field_add(&t2, &t0, &t1);
+    field_sub(&t3, &t0, &t1);
+    field_sqr(&R->z, &t3);
+    field_sqr(&t2, &t2);
+    field_mul(&R->x, ixPQ, &t2);
 }
 
 // Given cubical reps of P, Q and x(P - Q) = (1 : ixPQ)
@@ -44,32 +45,32 @@ cubicalDBLADD(ec_point_t *PpQ,
               ec_point_t *QQ,
               const ec_point_t *P,
               const ec_point_t *Q,
-              const fp2_t *ixPQ,
+              const field_t *ixPQ,
               const ec_point_t *A24)
 {
     // A24 = (A+2C/4C: 1)
-    assert(fp2_is_one(&A24->z));
+    assert(field_is_one(&A24->z));
 
-    fp2_t t0, t1, t2, t3;
+    field_t t0, t1, t2, t3;
 
-    fp2_add(&t0, &P->x, &P->z);
-    fp2_sub(&t1, &P->x, &P->z);
-    fp2_add(&PpQ->x, &Q->x, &Q->z);
-    fp2_sub(&t3, &Q->x, &Q->z);
-    fp2_sqr(&t2, &PpQ->x);
-    fp2_sqr(&QQ->z, &t3);
-    fp2_mul(&t0, &t0, &t3);
-    fp2_mul(&t1, &t1, &PpQ->x);
-    fp2_add(&PpQ->x, &t0, &t1);
-    fp2_sub(&t3, &t0, &t1);
-    fp2_sqr(&PpQ->z, &t3);
-    fp2_sqr(&PpQ->x, &PpQ->x);
-    fp2_mul(&PpQ->x, ixPQ, &PpQ->x);
-    fp2_sub(&t3, &t2, &QQ->z);
-    fp2_mul(&QQ->x, &t2, &QQ->z);
-    fp2_mul(&t0, &t3, &A24->x);
-    fp2_add(&t0, &t0, &QQ->z);
-    fp2_mul(&QQ->z, &t0, &t3);
+    field_add(&t0, &P->x, &P->z);
+    field_sub(&t1, &P->x, &P->z);
+    field_add(&PpQ->x, &Q->x, &Q->z);
+    field_sub(&t3, &Q->x, &Q->z);
+    field_sqr(&t2, &PpQ->x);
+    field_sqr(&QQ->z, &t3);
+    field_mul(&t0, &t0, &t3);
+    field_mul(&t1, &t1, &PpQ->x);
+    field_add(&PpQ->x, &t0, &t1);
+    field_sub(&t3, &t0, &t1);
+    field_sqr(&PpQ->z, &t3);
+    field_sqr(&PpQ->x, &PpQ->x);
+    field_mul(&PpQ->x, ixPQ, &PpQ->x);
+    field_sub(&t3, &t2, &QQ->z);
+    field_mul(&QQ->x, &t2, &QQ->z);
+    field_mul(&t0, &t3, &A24->x);
+    field_add(&t0, &t0, &QQ->z);
+    field_mul(&QQ->z, &t0, &t3);
 }
 
 // iterative biextension doubling
@@ -79,7 +80,7 @@ biext_ladder_2e(uint32_t e,
                 ec_point_t *nQ,
                 const ec_point_t *PQ,
                 const ec_point_t *Q,
-                const fp2_t *ixP,
+                const field_t *ixP,
                 const ec_point_t *A24)
 {
     copy_point(PnQ, PQ);
@@ -98,8 +99,8 @@ point_ratio(ec_point_t *R, const ec_point_t *PnQ, const ec_point_t *nQ, const ec
     assert(ec_is_zero(nQ));
     assert(ec_is_equal(PnQ, P));
 
-    fp2_mul(&R->x, &nQ->x, &P->x);
-    fp2_copy(&R->z, &PnQ->x);
+    field_mul(&R->x, &nQ->x, &P->x);
+    field_copy(&R->z, &PnQ->x);
 }
 
 // Compute the cubical translation of P by a point of 2-torsion T
@@ -112,35 +113,35 @@ translate(ec_point_t *P, const ec_point_t *T)
     // Otherwise T = (A : B) and P translates to (AX - BZ : BX - AZ)
     // We compute this in constant time by computing the generic case
     // and then using constant time swaps.
-    fp2_t PX_new, PZ_new;
+    field_t PX_new, PZ_new;
 
     {
-        fp2_t t0, t1;
+        field_t t0, t1;
 
         // PX_new = AX - BZ
-        fp2_mul(&t0, &T->x, &P->x);
-        fp2_mul(&t1, &T->z, &P->z);
-        fp2_sub(&PX_new, &t0, &t1);
+        field_mul(&t0, &T->x, &P->x);
+        field_mul(&t1, &T->z, &P->z);
+        field_sub(&PX_new, &t0, &t1);
 
         // PZ_new = BX - AZ
-        fp2_mul(&t0, &T->z, &P->x);
-        fp2_mul(&t1, &T->x, &P->z);
-        fp2_sub(&PZ_new, &t0, &t1);
+        field_mul(&t0, &T->z, &P->x);
+        field_mul(&t1, &T->x, &P->z);
+        field_sub(&PZ_new, &t0, &t1);
     }
 
     // When we have A zero we should return (Z : X)
-    uint32_t TA_is_zero = fp2_is_zero(&T->x);
-    fp2_select(&PX_new, &PX_new, &P->z, TA_is_zero);
-    fp2_select(&PZ_new, &PZ_new, &P->x, TA_is_zero);
+    uint32_t TA_is_zero = field_is_zero(&T->x);
+    field_select(&PX_new, &PX_new, &P->z, TA_is_zero);
+    field_select(&PZ_new, &PZ_new, &P->x, TA_is_zero);
 
     // When we have B zero we should return (X : Z)
-    uint32_t TB_is_zero = fp2_is_zero(&T->z);
-    fp2_select(&PX_new, &PX_new, &P->x, TB_is_zero);
-    fp2_select(&PZ_new, &PZ_new, &P->z, TB_is_zero);
+    uint32_t TB_is_zero = field_is_zero(&T->z);
+    field_select(&PX_new, &PX_new, &P->x, TB_is_zero);
+    field_select(&PZ_new, &PZ_new, &P->z, TB_is_zero);
 
     // Set the point to the desired result
-    fp2_copy(&P->x, &PX_new);
-    fp2_copy(&P->z, &PZ_new);
+    field_copy(&P->x, &PX_new);
+    field_copy(&P->z, &PZ_new);
 }
 
 // Compute the biextension monodromy g_P,Q^{2^g} (in level 1) via the
@@ -153,7 +154,7 @@ translate(ec_point_t *P, const ec_point_t *T)
 static void
 monodromy_i(ec_point_t *R, const pairing_params_t *pairing_data, bool swap_PQ)
 {
-    fp2_t ixP;
+    field_t ixP;
     ec_point_t P, Q, PnQ, nQ;
 
     // When we compute the Weil pairing we need both P + [2^e]Q and
@@ -163,11 +164,11 @@ monodromy_i(ec_point_t *R, const pairing_params_t *pairing_data, bool swap_PQ)
     if (!swap_PQ) {
         copy_point(&P, &pairing_data->P);
         copy_point(&Q, &pairing_data->Q);
-        fp2_copy(&ixP, &pairing_data->ixP);
+        field_copy(&ixP, &pairing_data->ixP);
     } else {
         copy_point(&P, &pairing_data->Q);
         copy_point(&Q, &pairing_data->P);
-        fp2_copy(&ixP, &pairing_data->ixQ);
+        field_copy(&ixP, &pairing_data->ixQ);
     }
 
     // Compute the biextension ladder P + [2^e]Q
@@ -181,45 +182,51 @@ monodromy_i(ec_point_t *R, const pairing_params_t *pairing_data, bool swap_PQ)
 static void
 cubical_normalization(pairing_params_t *pairing_data, const ec_point_t *P, const ec_point_t *Q)
 {
-    fp2_t t[4];
-    fp2_copy(&t[0], &P->x);
-    fp2_copy(&t[1], &P->z);
-    fp2_copy(&t[2], &Q->x);
-    fp2_copy(&t[3], &Q->z);
-    fp2_batched_inv(t, 4);
+    field_t t[4];
+    field_copy(&t[0], &P->x);
+    field_copy(&t[1], &P->z);
+    field_copy(&t[2], &Q->x);
+    field_copy(&t[3], &Q->z);
+    field_batched_inv(t, 4);
 
     // Store PZ / PX and QZ / QX
-    fp2_mul(&pairing_data->ixP, &P->z, &t[0]);
-    fp2_mul(&pairing_data->ixQ, &Q->z, &t[2]);
+    field_mul(&pairing_data->ixP, &P->z, &t[0]);
+    field_mul(&pairing_data->ixQ, &Q->z, &t[2]);
 
     // Store x(P), x(Q) normalised to (X/Z : 1)
-    fp2_mul(&pairing_data->P.x, &P->x, &t[1]);
-    fp2_mul(&pairing_data->Q.x, &Q->x, &t[3]);
-    fp2_set_one(&pairing_data->P.z);
-    fp2_set_one(&pairing_data->Q.z);
+    field_mul(&pairing_data->P.x, &P->x, &t[1]);
+    field_mul(&pairing_data->Q.x, &Q->x, &t[3]);
+    field_set_one(&pairing_data->P.z);
+    field_set_one(&pairing_data->Q.z);
 }
 
 // Weil pairing, PQ should be P+Q in (X:Z) coordinates
 // We assume the points are normalised correctly
 static void
-weil_n(fp2_t *r, const pairing_params_t *pairing_data)
+weil_n(field_t *r, const pairing_params_t *pairing_data)
 {
     ec_point_t R0, R1;
     monodromy_i(&R0, pairing_data, true);
     monodromy_i(&R1, pairing_data, false);
 
-    fp2_mul(r, &R0.x, &R1.z);
-    fp2_inv(r);
-    fp2_mul(r, r, &R0.z);
-    fp2_mul(r, r, &R1.x);
+    field_mul(r, &R0.x, &R1.z);
+    field_inv(r);
+    field_mul(r, r, &R0.z);
+    field_mul(r, r, &R1.x);
 }
 
 // Weil pairing, PQ should be P+Q in (X:Z) coordinates
 // Normalise the points and call the code above
 // The code will crash (division by 0) if either P or Q is (0:1)
 void
-weil(fp2_t *r, uint32_t e, const ec_point_t *P, const ec_point_t *Q, const ec_point_t *PQ, ec_curve_t *E)
+weil(field_t *r, uint32_t e, const ec_point_t *P, const ec_point_t *Q, const ec_point_t *PQ, ec_curve_t *E)
 {
+#ifdef FP_ONLY
+    if (e>1) {
+        printf("weil is not implemented over Fp when e>1.");
+        assert(0);
+    }
+#endif
     pairing_params_t pairing_data;
     // Construct the structure for the Weil pairing
     // Set (PX/PZ : 1), (QX : QZ : 1), PZ/PX and QZ/QX
@@ -239,38 +246,63 @@ weil(fp2_t *r, uint32_t e, const ec_point_t *P, const ec_point_t *Q, const ec_po
 // two helper functions for reducing the tate pairing
 // clear_cofac clears (p + 1) // 2^f for an Fp2 value
 void
-clear_cofac(fp2_t *r, const fp2_t *a)
+clear_cofac(field_t *r, const field_t *a)
 {
-    digit_t exp = *p_cofactor_for_2f;
-    exp >>= 1;
+    digit_t exp;// = *p_cofactor_for_2f;
+    //exp >>= 1;
 
-    fp2_t x;
-    fp2_copy(&x, a);
-    fp2_copy(r, a);
+    field_t x;
+    field_copy(&x, a);
+    field_copy(r, a);
 
     // removes cofac
-    while (exp > 0) {
-        fp2_sqr(r, r);
-        if (exp & 1) {
-            fp2_mul(r, r, &x);
+    //while (exp > 0) {
+        //field_sqr(r, r);
+        //if (exp & 1) {
+            //field_mul(r, r, &x);
+        //}
+        //exp >>= 1;
+    //}
+
+    for(int i=0; i<TORSION_ODD._mp_size; i++){
+        exp = TORSION_ODD._mp_d[i];
+        if(i==0){
+            exp >>= 1;
         }
-        exp >>= 1;
+        while(exp > 0){
+            field_sqr(r, r);
+            if (exp & 1) {
+                field_mul(r, r, &x);
+            }
+            exp >>= 1;
+        }
     }
 }
 
-// applies frobenius a + ib --> a - ib to an fp2 element
+// applies frobenius a + ib --> a - ib to an field element
 void
-fp2_frob(fp2_t *out, const fp2_t *in)
+fp2_frob(field_t *out, const field_t *in)
 {
+#ifdef FP_ONLY
+    field_copy(&out, &in);
+#else
     fp_copy(&(out->re), &(in->re));
     fp_neg(&(out->im), &(in->im));
+#endif
 }
 
 // reduced Tate pairing, normalizes the points, assumes PQ is P+Q in (X:Z)
 // coordinates. Computes 1/x(P) and 1/x(Q) for efficient cubical ladder
 void
-reduced_tate(fp2_t *r, uint32_t e, const ec_point_t *P, const ec_point_t *Q, const ec_point_t *PQ, ec_curve_t *E)
+reduced_tate(field_t *r, uint32_t e, const ec_point_t *P, const ec_point_t *Q, const ec_point_t *PQ, ec_curve_t *E)
 {
+#ifdef FP_ONLY
+    if (e>1) {
+        printf("reduced_tate is not implemented over Fp when e>1.");
+        assert(0);
+    }
+#endif
+
     uint32_t e_full = TORSION_EVEN_POWER;
     uint32_t e_diff = e_full - e;
     ec_point_t R;
@@ -292,19 +324,19 @@ reduced_tate(fp2_t *r, uint32_t e, const ec_point_t *P, const ec_point_t *Q, con
     // we get unreduced tate as R.X, R.Z
     // reduced tate is -(R.Z/R.X)^((p^2 - 1) div 2^f)
     //  we reuse R.X and R.Z to split reduction step ^(p-1) into frobenius and ^-1
-    fp2_t frob, tmp;
-    fp2_copy(&tmp, &R.x);
+    field_t frob, tmp;
+    field_copy(&tmp, &R.x);
     fp2_frob(&frob, &R.x);
-    fp2_mul(&R.x, &R.z, &frob);
+    field_mul(&R.x, &R.z, &frob);
     fp2_frob(&frob, &R.z);
-    fp2_mul(&R.z, &tmp, &frob);
-    fp2_inv(&R.x);
-    fp2_mul(r, &R.x, &R.z);
+    field_mul(&R.z, &tmp, &frob);
+    field_inv(&R.x);
+    field_mul(r, &R.x, &R.z);
 
     clear_cofac(r, r);
     // clear remaining 2^e_diff
     for (uint32_t j = 0; j < e_diff; j++) {
-        fp2_sqr(r, r);
+        field_sqr(r, r);
     }
 }
 
@@ -315,7 +347,7 @@ reduced_tate(fp2_t *r, uint32_t e, const ec_point_t *P, const ec_point_t *Q, con
 
 // recursive dlog function
 static bool
-fp2_dlog_2e_rec(digit_t *a, long len, fp2_t *pows_f, fp2_t *pows_g, long stacklen)
+fp2_dlog_2e_rec(digit_t *a, long len, field_t *pows_f, field_t *pows_g, long stacklen)
 {
     if (len == 0) {
         // *a = 0;
@@ -324,24 +356,24 @@ fp2_dlog_2e_rec(digit_t *a, long len, fp2_t *pows_f, fp2_t *pows_g, long stackle
         }
         return true;
     } else if (len == 1) {
-        if (fp2_is_one(&pows_f[stacklen - 1])) {
+        if (field_is_one(&pows_f[stacklen - 1])) {
             // a = 0;
             for (int i = 0; i < NWORDS_ORDER; i++) {
                 a[i] = 0;
             }
             for (int i = 0; i < stacklen - 1; ++i) {
-                fp2_sqr(&pows_g[i], &pows_g[i]); // new_g = g^2
+                field_sqr(&pows_g[i], &pows_g[i]); // new_g = g^2
             }
             return true;
-        } else if (fp2_is_equal(&pows_f[stacklen - 1], &pows_g[stacklen - 1])) {
+        } else if (field_is_equal(&pows_f[stacklen - 1], &pows_g[stacklen - 1])) {
             // a = 1;
             a[0] = 1;
             for (int i = 1; i < NWORDS_ORDER; i++) {
                 a[i] = 0;
             }
             for (int i = 0; i < stacklen - 1; ++i) {
-                fp2_mul(&pows_f[i], &pows_f[i], &pows_g[i]); // new_f = f*g
-                fp2_sqr(&pows_g[i], &pows_g[i]);             // new_g = g^2
+                field_mul(&pows_f[i], &pows_f[i], &pows_g[i]); // new_f = f*g
+                field_sqr(&pows_g[i], &pows_g[i]);             // new_g = g^2
             }
             return true;
         } else {
@@ -353,8 +385,8 @@ fp2_dlog_2e_rec(digit_t *a, long len, fp2_t *pows_f, fp2_t *pows_g, long stackle
         pows_f[stacklen] = pows_f[stacklen - 1];
         pows_g[stacklen] = pows_g[stacklen - 1];
         for (int i = 0; i < left; i++) {
-            fp2_sqr(&pows_f[stacklen], &pows_f[stacklen]);
-            fp2_sqr(&pows_g[stacklen], &pows_g[stacklen]);
+            field_sqr(&pows_f[stacklen], &pows_f[stacklen]);
+            field_sqr(&pows_g[stacklen], &pows_g[stacklen]);
         }
         // uint32_t dlp1 = 0, dlp2 = 0;
         digit_t dlp1[NWORDS_ORDER], dlp2[NWORDS_ORDER];
@@ -375,14 +407,14 @@ fp2_dlog_2e_rec(digit_t *a, long len, fp2_t *pows_f, fp2_t *pows_g, long stackle
 
 // compute DLP: compute scal such that f = g^scal with f, 1/g as input
 static bool
-fp2_dlog_2e(digit_t *scal, const fp2_t *f, const fp2_t *g_inverse, int e)
+fp2_dlog_2e(digit_t *scal, const field_t *f, const field_t *g_inverse, int e)
 {
     long log, len = e;
     for (log = 0; len > 1; len >>= 1)
         log++;
     log += 1;
 
-    fp2_t pows_f[log], pows_g[log];
+    field_t pows_f[log], pows_g[log];
     pows_f[0] = *f;
     pows_g[0] = *g_inverse;
 
@@ -401,39 +433,39 @@ fp2_dlog_2e(digit_t *scal, const fp2_t *f, const fp2_t *g_inverse, int e)
 static void
 cubical_normalization_dlog(pairing_dlog_params_t *pairing_dlog_data, ec_curve_t *curve)
 {
-    fp2_t t[8];
+    field_t t[8];
     ec_basis_t *PQ = &pairing_dlog_data->PQ;
     ec_basis_t *RS = &pairing_dlog_data->RS;
-    fp2_copy(&t[0], &PQ->P.x);
-    fp2_copy(&t[1], &PQ->P.z);
-    fp2_copy(&t[2], &PQ->Q.x);
-    fp2_copy(&t[3], &PQ->Q.z);
-    fp2_copy(&t[4], &PQ->PmQ.z);
-    fp2_copy(&t[5], &RS->P.z);
-    fp2_copy(&t[6], &RS->Q.z);
-    fp2_copy(&t[7], &curve->C);
+    field_copy(&t[0], &PQ->P.x);
+    field_copy(&t[1], &PQ->P.z);
+    field_copy(&t[2], &PQ->Q.x);
+    field_copy(&t[3], &PQ->Q.z);
+    field_copy(&t[4], &PQ->PmQ.z);
+    field_copy(&t[5], &RS->P.z);
+    field_copy(&t[6], &RS->Q.z);
+    field_copy(&t[7], &curve->C);
 
-    fp2_batched_inv(t, 8);
+    field_batched_inv(t, 8);
 
-    fp2_mul(&pairing_dlog_data->ixP, &PQ->P.z, &t[0]);
-    fp2_mul(&PQ->P.x, &PQ->P.x, &t[1]);
-    fp2_set_one(&PQ->P.z);
+    field_mul(&pairing_dlog_data->ixP, &PQ->P.z, &t[0]);
+    field_mul(&PQ->P.x, &PQ->P.x, &t[1]);
+    field_set_one(&PQ->P.z);
 
-    fp2_mul(&pairing_dlog_data->ixQ, &PQ->Q.z, &t[2]);
-    fp2_mul(&PQ->Q.x, &PQ->Q.x, &t[3]);
-    fp2_set_one(&PQ->Q.z);
+    field_mul(&pairing_dlog_data->ixQ, &PQ->Q.z, &t[2]);
+    field_mul(&PQ->Q.x, &PQ->Q.x, &t[3]);
+    field_set_one(&PQ->Q.z);
 
-    fp2_mul(&PQ->PmQ.x, &PQ->PmQ.x, &t[4]);
-    fp2_set_one(&PQ->PmQ.z);
+    field_mul(&PQ->PmQ.x, &PQ->PmQ.x, &t[4]);
+    field_set_one(&PQ->PmQ.z);
 
-    fp2_mul(&RS->P.x, &RS->P.x, &t[5]);
-    fp2_set_one(&RS->P.z);
+    field_mul(&RS->P.x, &RS->P.x, &t[5]);
+    field_set_one(&RS->P.z);
 
-    fp2_mul(&RS->Q.x, &RS->Q.x, &t[6]);
-    fp2_set_one(&RS->Q.z);
+    field_mul(&RS->Q.x, &RS->Q.x, &t[6]);
+    field_set_one(&RS->Q.z);
 
-    fp2_mul(&curve->A, &curve->A, &t[7]);
-    fp2_set_one(&curve->C);
+    field_mul(&curve->A, &curve->A, &t[7]);
+    field_set_one(&curve->C);
 }
 
 // Given two bases <P, Q> and basis = <R, S> compute
@@ -515,51 +547,51 @@ tate_dlog_partial(digit_t *r1, digit_t *r2, digit_t *s1, digit_t *s2, pairing_dl
 
     // computation of the reference Tate pairing
     ec_point_t T0;
-    fp2_t w1[5], w2[5];
+    field_t w1[5], w2[5];
 
     // t(P, Q)^(2^e_diff) = w0
     point_ratio(&T0, &nPQ, &nP, &pairing_dlog_data->PQ.Q);
-    fp2_copy(&w1[0], &T0.x);
-    fp2_copy(&w2[0], &T0.z);
+    field_copy(&w1[0], &T0.x);
+    field_copy(&w2[0], &T0.z);
 
     // t(R,P) = w0^r2
     point_ratio(&T0, &PnR, &nR, &pairing_dlog_data->PQ.P);
-    fp2_copy(&w1[1], &T0.x);
-    fp2_copy(&w2[1], &T0.z);
+    field_copy(&w1[1], &T0.x);
+    field_copy(&w2[1], &T0.z);
 
     // t(R,Q) = w0^r1
     point_ratio(&T0, &nRQ, &nR, &pairing_dlog_data->PQ.Q);
-    fp2_copy(&w2[2], &T0.x);
-    fp2_copy(&w1[2], &T0.z);
+    field_copy(&w2[2], &T0.x);
+    field_copy(&w1[2], &T0.z);
 
     // t(S,P) = w0^s2
     point_ratio(&T0, &PnS, &nS, &pairing_dlog_data->PQ.P);
-    fp2_copy(&w1[3], &T0.x);
-    fp2_copy(&w2[3], &T0.z);
+    field_copy(&w1[3], &T0.x);
+    field_copy(&w2[3], &T0.z);
 
     // t(S,Q) = w0^s1
     point_ratio(&T0, &nSQ, &nS, &pairing_dlog_data->PQ.Q);
-    fp2_copy(&w2[4], &T0.x);
-    fp2_copy(&w1[4], &T0.z);
+    field_copy(&w2[4], &T0.x);
+    field_copy(&w1[4], &T0.z);
 
     // batched reduction using projective representation
     for (int i = 0; i < 5; i++) {
-        fp2_t frob, tmp;
-        fp2_copy(&tmp, &w1[i]);
+        field_t frob, tmp;
+        field_copy(&tmp, &w1[i]);
         // inline frobenius for ^p
         // multiply by inverse to get ^(p-1)
         fp2_frob(&frob, &w1[i]);
-        fp2_mul(&w1[i], &w2[i], &frob);
+        field_mul(&w1[i], &w2[i], &frob);
 
         // repeat for denom
         fp2_frob(&frob, &w2[i]);
-        fp2_mul(&w2[i], &tmp, &frob);
+        field_mul(&w2[i], &tmp, &frob);
     }
 
     // batched normalization
-    fp2_batched_inv(w2, 5);
+    field_batched_inv(w2, 5);
     for (int i = 0; i < 5; i++) {
-        fp2_mul(&w1[i], &w1[i], &w2[i]);
+        field_mul(&w1[i], &w1[i], &w2[i]);
     }
 
     for (int i = 0; i < 5; i++) {
@@ -567,7 +599,7 @@ tate_dlog_partial(digit_t *r1, digit_t *r2, digit_t *s1, digit_t *s2, pairing_dl
 
         // removes 2^e_diff
         for (uint32_t j = 0; j < e_diff; j++) {
-            fp2_sqr(&w1[i], &w1[i]);
+            field_sqr(&w1[i], &w1[i]);
         }
     }
 
@@ -587,6 +619,10 @@ ec_dlog_2_tate(digit_t *r1,
                ec_curve_t *curve,
                int e)
 {
+#ifdef FP_ONLY
+    printf("ec_dlog_2_tate is not implemented over Fp.");
+    assert(0);
+#endif
     // assume PQ is a full torsion basis
     // returns a, b, c, d such that R = [a]P + [b]Q, S = [c]P + [d]Q
 

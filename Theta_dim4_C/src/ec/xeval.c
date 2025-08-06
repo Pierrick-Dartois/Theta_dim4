@@ -62,3 +62,54 @@ xeval_4(ec_point_t *R, const ec_point_t *Q, const int lenQ, const ec_kps4_t *kps
         field_mul(&(R[i].z), &(R[i].z), &t0);
     }
 }
+
+// 3-isogeny evaluation
+void
+xeval_3(ec_point_t *R, ec_point_t *const Q, const int lenQ, const ec_kps_t *kps)
+{
+    field_t r1, r2, r3;
+    for(int j=0;j<lenQ;j++){
+        field_add(&r2,&Q[j].x,&Q[j].z); // r2=x+z
+        field_mul(&r3,&r2,&kps->K[0].x); // r3=r2.K1 ((x3-z3)(x+z))
+        field_sub(&r2,&Q[j].x,&Q[j].z); // r2=x-z
+        field_mul(&r1,&r2,&kps->K[0].z); // r1=r2.K2 ((x3+z3)(x-z))
+        field_add(&r2,&r1,&r3); // r2=r1+r3 (2(xx3-zz3))
+        field_sqr(&r2,&r2); // r2=r2^2 (4(xx3-zz3)^2)
+        field_mul(&R[j].x,&r2,&Q[j].x); // x'=r2.x=4x(xx3-zz3)^2
+        field_sub(&r1,&r3,&r1); // r1=r3-r1 (2(x3z-z3x))
+        field_sqr(&r1,&r1); // r1=r1^2 (4(x3z-z3x)^2)
+        field_mul(&R[j].z,&r1,&Q[j].z); //z'=r1.z (4z(x3z-z3x)^2). OK
+    }
+}
+
+static void
+criss_cross(field_t *t1, field_t *t2, const field_t *a, const field_t *b, const field_t *c, const field_t *d){
+    field_t t3, t4;
+    field_mul(&t3,a,d);
+    field_mul(&t4,b,c);
+    field_add(t1,&t3,&t4);
+    field_sub(t2,&t3,&t4);
+}
+
+// (2d+1)-isogeny evaluation https://eprint.iacr.org/2017/504.pdf (Algoritm 3)
+void
+xeval_odd(ec_point_t *R, ec_point_t *const Q, const int lenQ, const ec_kps_t *kps, unsigned int d)
+{
+    field_t x_dual, z_dual, t0, t1;
+
+    for(int j=0; j<lenQ; j++){
+        field_add(&x_dual,&Q[j].x,&Q[j].z);
+        field_sub(&z_dual,&Q[j].x,&Q[j].z);
+        criss_cross(&R[j].x,&R[j].z,&kps->K[0].x,&kps->K[0].z,&x_dual,&z_dual);
+        for(int i=1;i<d;i++){
+            criss_cross(&t0,&t1,&kps->K[i].x,&kps->K[i].z,&x_dual,&z_dual);
+            field_mul(&R[j].x,&R[j].x,&t0);
+            field_mul(&R[j].z,&R[j].z,&t1);
+        }
+        field_sqr(&R[j].x,&R[j].x);
+        field_mul(&R[j].x,&R[j].x,&Q[j].x);
+        field_sqr(&R[j].z,&R[j].z);
+        field_mul(&R[j].z,&R[j].z,&Q[j].z);
+    }
+
+}

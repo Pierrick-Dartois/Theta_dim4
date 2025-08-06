@@ -1,8 +1,9 @@
 #ifndef _BIEXT_H_
 #define _BIEXT_H_
 
-#include <sqisign_namespace.h>
+//#include <sqisign_namespace.h>
 #include <ec.h>
+#include <field.h>
 
 typedef struct pairing_params
 {
@@ -10,8 +11,8 @@ typedef struct pairing_params
     ec_point_t P;   // x(P)
     ec_point_t Q;   // x(Q)
     ec_point_t PQ;  // x(P-Q) = (PQX/PQZ : 1)
-    fp2_t ixP;      // PZ/PX
-    fp2_t ixQ;      // QZ/QX
+    field_t ixP;      // PZ/PX
+    field_t ixQ;      // QZ/QX
     ec_point_t A24; // ((A+2)/4 : 1)
 } pairing_params_t;
 
@@ -31,16 +32,16 @@ typedef struct pairing_dlog_params
     ec_basis_t PQ;                   // x(P), x(Q), x(P-Q)
     ec_basis_t RS;                   // x(R), x(S), x(R-S)
     pairing_dlog_diff_points_t diff; // x(P - R), x(P - S), x(R - Q), x(S - Q)
-    fp2_t ixP;                       // PZ/PX
-    fp2_t ixQ;                       // QZ/QX
+    field_t ixP;                       // PZ/PX
+    field_t ixQ;                       // QZ/QX
     ec_point_t A24;                  // ((A+2)/4 : 1)
 } pairing_dlog_params_t;
 
 // Computes e = e_{2^e}(P, Q) using biextension ladder
-void weil(fp2_t *r, uint32_t e, const ec_point_t *P, const ec_point_t *Q, const ec_point_t *PQ, ec_curve_t *E);
+void weil(field_t *r, uint32_t e, const ec_point_t *P, const ec_point_t *Q, const ec_point_t *PQ, ec_curve_t *E);
 
 // Computes (reduced) z = t_{2^e}(P, Q) using biextension ladder
-void reduced_tate(fp2_t *r, uint32_t e, const ec_point_t *P, const ec_point_t *Q, const ec_point_t *PQ, ec_curve_t *E);
+void reduced_tate(field_t *r, uint32_t e, const ec_point_t *P, const ec_point_t *Q, const ec_point_t *PQ, ec_curve_t *E);
 
 // Given two bases <P, Q> and <R, S>
 // where <P, Q> is a basis for E[2^f]

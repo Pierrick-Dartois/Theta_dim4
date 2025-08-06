@@ -334,6 +334,37 @@ xDBLADD(ec_point_t *R,
     field_mul(&S->x, &S->x, &PQ->z);
 }
 
+void xTPL(ec_point_t* Q, const ec_point_t* P, const ec_point_t* A3)
+{
+    /* ----------------------------------------------------------------------------- *
+     * Differential point tripling given the montgomery coefficient A3 = (A+2C:A-2C)
+     * ----------------------------------------------------------------------------- */
+
+    field_t t0, t1, t2, t3, t4;
+    field_sub(&t0, &P->x, &P->z);
+    field_sqr(&t2, &t0);
+    field_add(&t1, &P->x, &P->z);
+    field_sqr(&t3, &t1);
+    field_add(&t4, &t1, &t0);
+    field_sub(&t0, &t1, &t0);
+    field_sqr(&t1, &t4);
+    field_sub(&t1, &t1, &t3);
+    field_sub(&t1, &t1, &t2);
+    field_mul(&Q->x, &t3, &A3->x);
+    field_mul(&t3, &Q->x, &t3);
+    field_mul(&Q->z, &t2, &A3->z);
+    field_mul(&t2, &t2, &Q->z);
+    field_sub(&t3, &t2, &t3);
+    field_sub(&t2, &Q->x, &Q->z);
+    field_mul(&t1, &t2, &t1);
+    field_add(&t2, &t3, &t1);
+    field_sqr(&t2, &t2);
+    field_mul(&Q->x, &t2, &t4);
+    field_sub(&t1, &t3, &t1);
+    field_sqr(&t1, &t1);
+    field_mul(&Q->z, &t1, &t0);
+}
+
 void
 xMUL(ec_point_t *Q, const ec_point_t *P, const digit_t *k, const int kbits, const ec_curve_t *curve)
 { // The Montgomery ladder
@@ -370,6 +401,41 @@ xMUL(ec_point_t *Q, const ec_point_t *P, const digit_t *k, const int kbits, cons
 
         cswap_points(&R0, &R1, mask);
         xDBLADD(&R0, &R1, &R0, &R1, P, &A24, true);
+    }
+    swap = 0 ^ prevbit;
+    mask = 0 - (digit_t)swap;
+    cswap_points(&R0, &R1, mask);
+
+    field_copy(&Q->x, &R0.x);
+    field_copy(&Q->z, &R0.z);
+}
+
+void
+xMUL_A24(ec_point_t *Q,
+                    const ec_point_t *P,
+                    const digit_t *k,
+                    const int kbits,
+                    const ec_point_t *A24)
+{
+    // This version receives the coefficient value A24 = (A+2C:4C)
+    ec_point_t R0, R1;
+    digit_t mask;
+    unsigned int bit = 0, prevbit = 0, swap;
+
+    // R0 <- (1:0), R1 <- P
+    ec_point_init(&R0);
+    field_copy(&R1.x, &P->x);
+    field_copy(&R1.z, &P->z);
+
+    // Main loop
+    for (int i = kbits - 1; i >= 0; i--) {
+        bit = (k[i >> LOG2RADIX] >> (i & (RADIX - 1))) & 1;
+        swap = bit ^ prevbit;
+        prevbit = bit;
+        mask = 0 - (digit_t)swap;
+
+        cswap_points(&R0, &R1, mask);
+        xDBLADD(&R0, &R1, &R0, &R1, P, A24);
     }
     swap = 0 ^ prevbit;
     mask = 0 - (digit_t)swap;

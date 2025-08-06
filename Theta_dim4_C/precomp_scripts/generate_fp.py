@@ -356,7 +356,7 @@ def write_constants_file(p, name, d_word_params, p_shape, args=None):
     lines = []
     lines += ["#include <constants.h>"]
     lines += [""]
-    lines += [f"const uint64_t NWORDS_FIELD = {d_word_params['Radix']};"]
+    lines += [f"const uint64_t NWORDS_FIELD = {d_word_params['Nlimbs']};"]
     lines += [f"const uint64_t NWORDS_ORDER = {ceil(d_word_params['Nbits'] / d_word_params['Wordlength'])};"]
 
     charac = Ibz(p)

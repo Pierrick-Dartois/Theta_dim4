@@ -7,8 +7,8 @@
 
 #ifndef EC_H
 #define EC_H
-#include <sqisign_namespace.h>
-#include <ec_params.h>
+//#include <sqisign_namespace.h>
+//#include <ec_params.h>
 #include <field.h>
 #include <tools.h>
 #include <stdio.h>
@@ -351,6 +351,8 @@ void ec_dbl_iter(ec_point_t *res, int n, const ec_point_t *P, ec_curve_t *curve)
  */
 void ec_dbl_iter_basis(ec_basis_t *res, int n, const ec_basis_t *B, ec_curve_t *curve);
 
+void xTPL(ec_point_t* Q, const ec_point_t* P, const ec_point_t* A3);
+
 /**
  * @brief Point multiplication
  *
@@ -361,6 +363,8 @@ void ec_dbl_iter_basis(ec_basis_t *res, int n, const ec_basis_t *B, ec_curve_t *
  * @param kbits numer of bits of the scalar
  */
 void ec_mul(ec_point_t *res, const digit_t *scalar, const int kbits, const ec_point_t *P, ec_curve_t *curve);
+
+void xMUL_A24(ec_point_t *Q, const ec_point_t *P, const digit_t *k, const int kbits, const ec_point_t *A24);
 
 /**
  * @brief Combination P+m*Q

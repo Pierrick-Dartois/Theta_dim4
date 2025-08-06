@@ -1,5 +1,6 @@
 #include <intbig.h> // Where ibz_t is defined
-#define RADIX 64
+//#define RADIX 64 // already included in <tutil.h>
+//#define LOG2RADIX 6 // already included in <tutil.h>
 extern const uint64_t NWORDS_FIELD;
 extern const uint64_t NWORDS_ORDER;
 extern const uint64_t TORSION_EVEN_POWER;//e_2

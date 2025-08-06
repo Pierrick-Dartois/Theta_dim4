@@ -1,6 +1,6 @@
 #include <constants.h>
 
-const uint64_t NWORDS_FIELD = 51;
+const uint64_t NWORDS_FIELD = 5;
 const uint64_t NWORDS_ORDER = 4;
 const uint64_t TORSION_EVEN_POWER = 248;
 const ibz_t CHARACTERISTIC = {{._mp_alloc = 0, ._mp_size = 4, ._mp_d = (mp_limb_t[]) {0xffffffffffffffff,0xffffffffffffffff,0xffffffffffffffff,0x4ffffffffffffff}}};
