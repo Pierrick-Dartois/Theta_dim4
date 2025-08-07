@@ -2,6 +2,7 @@
 
 const uint64_t NWORDS_FIELD = 7;
 const uint64_t NWORDS_ORDER = 6;
+const uint64_t FP_ENCODED_BYTES = 56;
 const uint64_t TORSION_EVEN_POWER = 194;
 const ibz_t CHARACTERISTIC = {{._mp_alloc = 0, ._mp_size = 6, ._mp_d = (mp_limb_t[]) {0xffffffffffffffff,0xffffffffffffffff,0xffffffffffffffff,0xee16507a30922353,0xb1ef20149eb7a5cf,0xb4000a89caea8}}};
 const ibz_t TORSION_EVEN = {{._mp_alloc = 0, ._mp_size = 4, ._mp_d = (mp_limb_t[]) {0x0,0x0,0x0,0x4}}};

@@ -412,7 +412,7 @@ int
 main(int argc, char *argv[])
 {
     uint32_t seed[12] = { 0 };
-    int iterations = 1000 * SQISIGN_TEST_REPS;
+    int iterations = 1000;// * SQISIGN_TEST_REPS;
     int help = 0;
     int seed_set = 0;
 

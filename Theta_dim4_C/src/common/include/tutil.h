@@ -17,20 +17,20 @@
 #define UNUSED
 #endif
 
-#if defined(RADIX_64)
+//#if defined(RADIX_64)
 #define digit_t uint64_t
 #define sdigit_t int64_t
 #define RADIX 64
 #define LOG2RADIX 6
 #define BSWAP_DIGIT(i) BSWAP64(i)
-#elif defined(RADIX_32)
-#define digit_t uint32_t
-#define sdigit_t int32_t
-#define RADIX 32
-#define LOG2RADIX 5
-#define BSWAP_DIGIT(i) BSWAP32(i)
-#else
-#error "Radix must be 32bit or 64 bit"
-#endif
+//#elif defined(RADIX_32)
+//#define digit_t uint32_t
+//#define sdigit_t int32_t
+//#define RADIX 32
+//#define LOG2RADIX 5
+//#define BSWAP_DIGIT(i) BSWAP32(i)
+//#else
+//#error "Radix must be 32bit or 64 bit"
+//#endif
 
 #endif

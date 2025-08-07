@@ -164,6 +164,7 @@ def write_field_file(p):
     lines += ["******************************************************************************/"]
     lines += [""]
 
+    lines += [f"#include <fp.h>"]
     lines += [f"const digit_t ZERO[NWORDS_FIELD] = {int_to_montgemery_fp_const(0, p, Nlimbs, Radix)};"]
     lines += [f"const digit_t ONE[NWORDS_FIELD] = {int_to_montgemery_fp_const(1, p, Nlimbs, Radix)};"]
     lines += [
@@ -358,6 +359,8 @@ def write_constants_file(p, name, d_word_params, p_shape, args=None):
     lines += [""]
     lines += [f"const uint64_t NWORDS_FIELD = {d_word_params['Nlimbs']};"]
     lines += [f"const uint64_t NWORDS_ORDER = {ceil(d_word_params['Nbits'] / d_word_params['Wordlength'])};"]
+    lines += [f"const uint64_t FP_ENCODED_BYTES = {d_word_params['Nlimbs']*8};"]
+
 
     charac = Ibz(p)
     tor_even = Ibz(2**e_2)

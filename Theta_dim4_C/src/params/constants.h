@@ -3,6 +3,7 @@
 //#define LOG2RADIX 6 // already included in <tutil.h>
 extern const uint64_t NWORDS_FIELD;
 extern const uint64_t NWORDS_ORDER;
+extern const uint64_t FP_ENCODED_BYTES;
 extern const uint64_t TORSION_EVEN_POWER;//e_2
 extern const ibz_t CHARACTERISTIC;
 extern const ibz_t TORSION_EVEN;// 2^e_2

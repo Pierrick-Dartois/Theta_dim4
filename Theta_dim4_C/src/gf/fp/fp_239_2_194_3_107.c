@@ -792,6 +792,7 @@ static int modcmp(const spint *a, const spint *b) {
 API functions calling generated code above
 ******************************************************************************/
 
+#include <fp.h>
 const digit_t ZERO[NWORDS_FIELD] = {0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0};
 const digit_t ONE[NWORDS_FIELD] = {0x5b, 0x0, 0x0, 0x35c4900000000, 0xf165e116490bc, 0x22fffe62ae52e0, 0x3fc4104dea0};
 static const digit_t TWO_INV[NWORDS_FIELD] = {0x2d, 0x0, 0x0, 0x13f28f00000000, 0x1a732613da8576, 0x22e3dd718066df, 0x5bfe25c754c5};
