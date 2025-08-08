@@ -1,7 +1,7 @@
 #ifndef FP2_H
 #define FP2_H
 
-#include <sqisign_namespace.h>
+//#include <sqisign_namespace.h>
 #include "fp.h"
 #include <stdio.h>
 

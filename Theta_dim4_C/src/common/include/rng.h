@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef rng_h
-#define rng_h
+#ifndef RNG_H
+#define RNG_H
 
 //#include <sqisign_namespace.h>
 

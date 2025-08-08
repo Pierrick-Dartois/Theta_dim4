@@ -5,6 +5,7 @@
 //#include <sqisign_namespace.h>
 #include <stdint.h>
 #include <stdlib.h>
+#include <stdio.h>
 #include <stdbool.h>
 #include <stddef.h>
 #include <string.h>
@@ -47,9 +48,9 @@ uint32_t fp_sqrt_verify(fp_t *a);
 void fp_half(fp_t *out, const fp_t *a);
 void fp_exp3div4(fp_t *out, const fp_t *a);
 void fp_div3(fp_t *out, const fp_t *a);
-void fp_batched_inv(fp_t *x, int len);
-void fp_proj_batched_inv(fp_t *x, int len);
-void fp_proj_batched_inv_with_coeff(fp_t *x, fp_t *coeff, int len);
+void fp_batched_inv(fp_t *x, const int len);
+void fp_proj_batched_inv(fp_t *x, const int len);
+void fp_proj_batched_inv_with_coeff(fp_t *x, fp_t *coeff, const int len);
 void fp_print(const char *name, const fp_t *a);
 
 #endif

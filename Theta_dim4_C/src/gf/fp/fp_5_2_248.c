@@ -673,12 +673,12 @@ fp_div3(fp_t *out, const fp_t *a)
 void
 fp_encode(void *dst, const fp_t *a)
 {
-    modexp(a, dst);
+    modexp(*a, dst);
 }
 
 uint32_t
 fp_decode(fp_t *d, const void *src)
 {
-    return modimp(src,d);
+    return modimp(src,*d);
 }
 

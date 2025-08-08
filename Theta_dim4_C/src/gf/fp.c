@@ -16,7 +16,7 @@ fp_select(fp_t *d, const fp_t *a0, const fp_t *a1, uint32_t ctl)
 
 uint32_t 
 fp_is_one(const fp_t *a){
-    return fp_is_equal(&a, &ONE);
+    return fp_is_equal(a, &ONE);
 }
 
 void
@@ -37,7 +37,7 @@ fp_sqrt_verify(fp_t *a)
 }
 
 void
-fp_batched_inv(fp_t *x, int len)
+fp_batched_inv(fp_t *x, const int len)
 {
     fp_t t1[len], t2[len];
     fp_t inverse;
@@ -67,7 +67,7 @@ fp_batched_inv(fp_t *x, int len)
 }
 
 void
-fp_proj_batched_inv(fp_t *x, int len)
+fp_proj_batched_inv(fp_t *x, const int len)
 {
     fp_t t1[len-1], t2[len];
 
@@ -95,7 +95,7 @@ fp_proj_batched_inv(fp_t *x, int len)
 }
 
 void
-fp_proj_batched_inv_with_coeff(fp_t *x, fp_t *coeff, int len)
+fp_proj_batched_inv_with_coeff(fp_t *x, fp_t *coeff, const int len)
 {
     fp_t t1[len], t2[len];
 
@@ -107,7 +107,7 @@ fp_proj_batched_inv_with_coeff(fp_t *x, fp_t *coeff, int len)
     }
 
     // coeff = x0 * x1 * ... * xn
-    fp_copy(&coeff, &t1[len - 1]);
+    fp_copy(coeff, &t1[len - 1]);
 
     fp_set_one(&t2[0]);
     // t2 = 1, xn , x(n-1) * xn, ... , x1 * ... * xn
@@ -128,7 +128,7 @@ fp_print(const char *name, const fp_t *a)
     printf("%s0x", name);
 
     uint8_t buf[FP_ENCODED_BYTES];
-    fp_encode(&buf, &a); // Encoding ensures canonical rep
+    fp_encode(&buf, a); // Encoding ensures canonical rep
     for (int i = 0; i < FP_ENCODED_BYTES; i++) {
         printf("%02x", buf[FP_ENCODED_BYTES - i - 1]);
     }

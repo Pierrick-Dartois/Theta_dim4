@@ -294,13 +294,13 @@ def write_field_file(p):
         void
         fp_encode(void *dst, const fp_t *a)
         {
-            modexp(a, dst);
+            modexp(*a, dst);
         }
 
         uint32_t
         fp_decode(fp_t *d, const void *src)
         {
-            return modimp(src,d);
+            return modimp(src,*d);
         }
     """
         )
@@ -357,9 +357,9 @@ def write_constants_file(p, name, d_word_params, p_shape, args=None):
     lines = []
     lines += ["#include <constants.h>"]
     lines += [""]
-    lines += [f"const uint64_t NWORDS_FIELD = {d_word_params['Nlimbs']};"]
-    lines += [f"const uint64_t NWORDS_ORDER = {ceil(d_word_params['Nbits'] / d_word_params['Wordlength'])};"]
-    lines += [f"const uint64_t FP_ENCODED_BYTES = {d_word_params['Nlimbs']*8};"]
+    #lines += [f"const uint64_t NWORDS_FIELD = {d_word_params['Nlimbs']};"]
+    #lines += [f"const uint64_t NWORDS_ORDER = {ceil(d_word_params['Nbits'] / d_word_params['Wordlength'])};"]
+    #lines += [f"const uint64_t FP_ENCODED_BYTES = {d_word_params['Nlimbs']*8};"]
 
 
     charac = Ibz(p)
@@ -391,6 +391,49 @@ def write_constants_file(p, name, d_word_params, p_shape, args=None):
     print(f"Writing to file: {filename}")
     with open(filename, "w") as file:
         file.writelines([line + "\n" for line in lines])
+
+def write_constants_header(name, d_word_params):
+    filename = f"../src/params/constants.h"
+
+    d_lines = {"Begin":[]}
+
+    print(f"Writing to file: {filename}")
+    with open(filename, "r") as file:
+        L = file.readlines()
+        i = 0
+
+        while i<len(L) and L[i][0:9] != "#ifdef P_":
+            d_lines["Begin"].append(L[i])
+            i += 1
+
+
+        if i<len(L):
+            PNAME = L[i][9:-1]
+            d_lines[PNAME] = []
+        while i<len(L):
+            if L[i][0:9] != "#ifdef P_":
+                d_lines[PNAME].append(L[i])
+            else:
+                PNAME = L[i][9:-1]
+                d_lines[PNAME] = []
+            i += 1
+
+    d_lines[name] = [f"#define NWORDS_FIELD {d_word_params['Nlimbs']}\n",
+    f"#define NWORDS_ORDER {ceil(d_word_params['Nbits'] / d_word_params['Wordlength'])}\n",
+    f"#define FP_ENCODED_BYTES {d_word_params['Nlimbs']*8}\n",
+    f"#endif\n"]
+
+    with open(filename, "w") as file:
+        L = d_lines["Begin"]
+
+        lines = False
+        for x in d_lines:
+            lines = True
+            if x!="Begin":
+                L.append(f"#ifdef P_{x}\n")
+                L += d_lines[x]
+
+        file.writelines(L)
 
 
 if __name__ == "__main__":
@@ -425,6 +468,7 @@ if __name__ == "__main__":
 
     d_word_params = write_field_file(p)
     write_constants_file(p, args.name, d_word_params, p_shape, args=addl_args)
+    write_constants_header(args.name, d_word_params)
 
     os.system("mv -v field.c ../src/gf/fp/fp_" + args.name + ".c")
     os.system("rm -v time.c")

@@ -405,7 +405,7 @@ randombytes_select(unsigned char *buf, unsigned long long n)
 #endif
 }
 
-#ifdef RANDOMBYTES_SYSTEM
+//#ifdef RANDOMBYTES_SYSTEM
 //SQISIGN_API
 int
 randombytes(unsigned char *x, unsigned long long xlen)
@@ -428,4 +428,4 @@ randombytes_init(unsigned char *entropy_input,
     (void)personalization_string;
     (void)security_strength;
 }
-#endif
+//#endif
