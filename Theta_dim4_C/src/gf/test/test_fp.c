@@ -434,6 +434,7 @@ fp_test(int iterations)
         printf("\n");
         return false;
     }
+    printf("\n");
 
 
     // Square root and square detection

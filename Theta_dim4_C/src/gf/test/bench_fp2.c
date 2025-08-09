@@ -6,8 +6,8 @@
 #include "test_utils.h"
 #include <rng.h>
 
-#define STRINGIFY2(x) #x
-#define STRINGIFY(x) STRINGIFY2(x)
+//#define STRINGIFY2(x) #x
+//#define STRINGIFY(x) STRINGIFY2(x)
 
 bool
 fp2_run(int iterations)
@@ -15,15 +15,19 @@ fp2_run(int iterations)
     bool OK = true;
     int n, i;
     uint64_t cycles1, cycles2;
-    fp2_t a, b;
+    fp2_t a, b, c[3], d[3];
     uint8_t tmp[2 * FP_ENCODED_BYTES];
 
     fp2_random_test(&a);
     fp2_random_test(&b);
+    for(int i=0; i<3; i++) {
+        fp2_random_test(&c[i]);
+        fp2_random_test(&d[i]);
+    }
 
     printf("\n-------------------------------------------------------------------------------------"
            "-------------------\n\n");
-    printf("Benchmarking GF(p^2) field arithmetic for " STRINGIFY(SQISIGN_VARIANT) ": \n\n");
+    printf("Benchmarking GF(p^2) field arithmetic: \n\n");
 
     // GF(p^2) addition
     uint64_t cycle_runs[20];
@@ -140,6 +144,42 @@ fp2_run(int iterations)
            cycle_runs[4] / iterations,
            tmp[0]);
 
+    // GF(p^2) batched inversion
+    for (i = 0; i < 20; i++) {
+        cycles1 = cpucycles();
+        for (n = 0; n < iterations; n++) {
+            fp2_batched_inv(c,3);
+            for(int j=0; j<3; j++){
+                fp2_add(&c[j],&c[j],&d[j]);
+            }
+        }
+        cycles2 = cpucycles();
+        cycle_runs[i] = cycles2 - cycles1;
+    }
+    fp2_encode(tmp, &c[0]);
+    qsort(cycle_runs + 10, 10, sizeof cycle_runs[0], cmp_u64);
+    printf("  GF(p^2) batched inversion runs in ................................. %" PRIu64 " cycles, (%u ignore me)\n",
+           cycle_runs[4] / iterations,
+           tmp[0]);
+
+    // GF(p^2) projective batched inversion
+    for (i = 0; i < 20; i++) {
+        cycles1 = cpucycles();
+        for (n = 0; n < iterations; n++) {
+            fp2_proj_batched_inv(c,3);
+            for(int j=0; j<3; j++){
+                fp2_add(&c[j],&c[j],&d[j]);
+            }
+        }
+        cycles2 = cpucycles();
+        cycle_runs[i] = cycles2 - cycles1;
+    }
+    fp2_encode(tmp, &c[0]);
+    qsort(cycle_runs + 10, 10, sizeof cycle_runs[0], cmp_u64);
+    printf("  GF(p^2) projective batched inversion runs in ...................... %" PRIu64 " cycles, (%u ignore me)\n",
+           cycle_runs[4] / iterations,
+           tmp[0]);
+
     // GF(p^2) sqrt
     for (i = 0; i < 20; i++) {
         cycles1 = cpucycles();
@@ -179,7 +219,7 @@ int
 main(int argc, char *argv[])
 {
     uint32_t seed[12] = { 0 };
-    int iterations = 1000 * SQISIGN_TEST_REPS;
+    int iterations = 1000;
     int help = 0;
     int seed_set = 0;
 

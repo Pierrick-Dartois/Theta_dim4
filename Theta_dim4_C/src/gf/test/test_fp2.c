@@ -10,7 +10,7 @@ fp2_test(int iterations)
 { // Tests for the GF(p^2) arithmetic
     bool OK = true;
     int n, passed;
-    fp2_t a, b, c, d, e, f;
+    fp2_t a, b, c, d, e, f, g[3], h[3];
 
     printf("\n-------------------------------------------------------------------------------------"
            "-------------------\n\n");
@@ -261,6 +261,66 @@ fp2_test(int iterations)
     }
     printf("\n");
 
+    // Field batch inversion
+    passed = 1;
+    for (n = 0; n < iterations; n++) {
+        fp2_set_one(&b);
+
+        for (int i=0; i<3; i++) {
+            fp2_random_test(&g[i]);
+        }
+        for (int i=0; i<3; i++) {
+            fp2_copy(&h[i],&g[i]);
+        }
+
+        fp2_batched_inv(g,3);
+        for (int i=0; i<3; i++) {
+            fp2_mul(&g[i],&g[i],&h[i]);
+            passed = passed & fp2_is_equal(&g[i], &b);
+        }
+        if (!passed) {
+            break;
+        }
+
+        for (int i=0; i<3; i++) {
+            fp2_copy(&g[i],&h[i]);
+        }
+
+        fp2_proj_batched_inv(g, 3);
+        for (int i=0; i<3; i++) {
+            fp2_mul(&g[i],&g[i],&h[i]);
+        }
+        for (int i=0; i<2; i++) {
+            passed = passed & fp2_is_equal(&g[i], &g[i+1]);
+        }
+        if (!passed) {
+            break;
+        }
+
+        for (int i=0; i<3; i++) {
+            fp2_copy(&g[i],&h[i]);
+        }
+
+        fp2_proj_batched_inv_with_coeff(g, &a, 3);
+        for (int i=0; i<3; i++) {
+            fp2_mul(&g[i],&g[i],&h[i]);
+        }
+        for (int i=0; i<3; i++) {
+            passed = passed & fp2_is_equal(&g[i], &a);
+        }
+        if (!passed) {
+            break;
+        }
+    }
+    if (passed)
+        printf("  GF(p^2) batched inversion tests.................................... PASSED");
+    else {
+        printf("  GF(p) batched inversion tests... FAILED");
+        printf("\n");
+        return false;
+    }
+    printf("\n");
+
     // Square root and square detection in GF(p^2)
     passed = 1;
     for (n = 0; n < iterations; n++) {
@@ -301,7 +361,7 @@ int
 main(int argc, char *argv[])
 {
     uint32_t seed[12] = { 0 };
-    int iterations = 1000 * SQISIGN_TEST_REPS;
+    int iterations = 1000;
     int help = 0;
     int seed_set = 0;
 

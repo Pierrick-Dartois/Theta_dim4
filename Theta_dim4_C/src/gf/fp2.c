@@ -1,5 +1,5 @@
 #include <inttypes.h>
-#include <encoded_sizes.h>
+#include <constants.h>
 #include <fp2.h>
 
 /* Arithmetic modulo X^2 + 1 */
@@ -201,7 +201,7 @@ fp2_half(fp2_t *x, const fp2_t *y)
 }
 
 void 
-fp2_div3(fp2_t *out, const fp2_t *a) 
+fp2_div3(fp2_t *out, const fp2_t *in) 
 {
     fp_div3(&(out->re),&(in->re));
     fp_div3(&(out->im),&(in->im));
@@ -278,7 +278,7 @@ fp2_proj_batched_inv_with_coeff(fp2_t *x, fp2_t *coeff, int len)
     }
 
     // coeff = x0 * x1 * ... * xn
-    fp2_copy(&coeff, &t1[len - 1]);
+    fp2_copy(coeff, &t1[len - 1]);
 
     fp2_set_one(&t2[0]);
     // t2 = 1, xn , x(n-1) * xn, ... , x1 * ... * xn
