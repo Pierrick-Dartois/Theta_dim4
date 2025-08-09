@@ -11,7 +11,7 @@ fp_test(int iterations)
 { // Tests for the field arithmetic
     bool OK = true;
     int n, passed;
-    fp_t a, b, c, d, e, f;
+    fp_t a, b, c, d, e, f, g[3], h[3];
 
     printf("\n-------------------------------------------------------------------------------------"
            "-------------------\n\n");
@@ -377,6 +377,64 @@ fp_test(int iterations)
         return false;
     }
     printf("\n");
+
+    // Field batch inversion
+    passed = 1;
+    for (n = 0; n < iterations; n++) {
+        for (int i=0; i<3; i++) {
+            fp_random_test(&g[i]);
+        }
+        for (int i=0; i<3; i++) {
+            fp_copy(&h[i],&g[i]);
+        }
+
+        fp_batched_inv(g,3);
+        for (int i=0; i<3; i++) {
+            fp_mul(&g[i],&g[i],&h[i]);
+            passed = passed & fp_is_equal(&g[i], (fp_t *)&ONE);
+        }
+        if (!passed) {
+            break;
+        }
+
+        for (int i=0; i<3; i++) {
+            fp_copy(&g[i],&h[i]);
+        }
+
+        fp_proj_batched_inv(g, 3);
+        for (int i=0; i<3; i++) {
+            fp_mul(&g[i],&g[i],&h[i]);
+        }
+        for (int i=0; i<2; i++) {
+            passed = passed & fp_is_equal(&g[i], &g[i+1]);
+        }
+        if (!passed) {
+            break;
+        }
+
+        for (int i=0; i<3; i++) {
+            fp_copy(&g[i],&h[i]);
+        }
+
+        fp_proj_batched_inv_with_coeff(g, &a, 3);
+        for (int i=0; i<3; i++) {
+            fp_mul(&g[i],&g[i],&h[i]);
+        }
+        for (int i=0; i<3; i++) {
+            passed = passed & fp_is_equal(&g[i], &a);
+        }
+        if (!passed) {
+            break;
+        }
+    }
+    if (passed)
+        printf("  GF(p) batched inversion tests.................................... PASSED");
+    else {
+        printf("  GF(p) batched inversion tests... FAILED");
+        printf("\n");
+        return false;
+    }
+
 
     // Square root and square detection
     passed = 1;
