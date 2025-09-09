@@ -546,7 +546,7 @@ uint32_t lift_basis_normalized(jac_point_t *P, jac_point_t *Q, ec_basis_t *B, ec
 uint32_t lift_basis(jac_point_t *P, jac_point_t *Q, ec_basis_t *B, ec_curve_t *E);
 
 /**
- * @brief Check if basis points (P, Q) form a full 4-basis
+ * @brief Check if basis points (P, Q) form a full 4-torsion basis
  *
  * @param B: a basis
  * @param E: an elliptic curve
@@ -554,6 +554,19 @@ uint32_t lift_basis(jac_point_t *P, jac_point_t *Q, ec_basis_t *B, ec_curve_t *E
  * @return 0xFFFFFFFF if they form a basis, 0 otherwise
  */
 uint32_t ec_is_basis_four_torsion(const ec_basis_t *B, const ec_curve_t *E);
+
+/**
+ * @brief Computes a difference P-Q of two projective points P and Q in (X:Z) 
+ * coordinates in a deterministic way.
+ * Based on Proposition 3 of https://eprint.iacr.org/2017/518.pdf.
+ *
+ * @param PQ: output point
+ * @param P: input point
+ * @param Q: input point
+ * @param curve: elliptic curve containing the points
+ *
+ */
+void projective_difference_point(ec_point_t *PQ, const ec_point_t *P, const ec_point_t *Q, const ec_curve_t *curve);
 
 /*
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *

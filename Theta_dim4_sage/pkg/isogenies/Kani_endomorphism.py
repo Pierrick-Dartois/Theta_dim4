@@ -13,10 +13,11 @@ from ..theta_structures.Theta_dim1 import ThetaStructureDim1, ThetaPointDim1
 from ..theta_structures.Theta_dim2 import ThetaStructureDim2, ProductThetaStructureDim2, ThetaPointDim2
 from ..theta_structures.Tuple_point import TuplePoint
 from ..theta_structures.Theta_dim4 import ProductThetaStructureDim1To4, ProductThetaStructureDim2To4
+from ..theta_structures.theta_helpers_dim4 import hadamard, proj_equal
 from ..utilities.discrete_log import weil_pairing_pari
 from ..isogenies_dim2.isogeny_dim2 import ThetaIsogenyDim2
 from ..isogenies_dim2.gluing_isogeny_dim2 import GluingThetaIsogenyDim2
-from ..isogenies.gluing_isogeny_dim4 import GluingIsogenyDim4
+from ..isogenies.gluing_isogeny_dim4 import GluingIsogenyDim4, proj_equal
 from ..isogenies.isogeny_dim4 import IsogenyDim4
 from ..isogenies.Kani_gluing_isogeny_chain_dim4 import KaniClapotiGluing, KaniGluingIsogenyChainDim4, KaniGluingIsogenyChainDim4Half
 from ..isogenies.isogeny_chain_dim4 import IsogenyChainDim4
@@ -170,7 +171,7 @@ class KaniEndoHalf:
 	\alpha_i:=[[a1, a2],
 			   [-a2, a1]]\in\End(E_i^2).
 	"""
-	def __init__(self,P1,Q1,R2,S2,q,a1,a2,e,f,strategy1=None,strategy2=None):
+	def __init__(self,P1,Q1,R2,S2,q,a1,a2,e,f,strategy1=None,strategy2=None,verbose=True):
 		e1=ceil(e/2)
 		e2=e-e1
 
@@ -244,18 +245,33 @@ class KaniEndoHalf:
 		# Gluing isogeny chains
 		points_m=[P1_doubles[-m-2],Q1_doubles[-m-2],R2_doubles[-m-2],S2_doubles[-m-2]]# Points of order 2**(m+3)
 
-		self.gluing_isogeny_chain1=KaniGluingIsogenyChainDim4Half(points_m, a1, a2, q, m, Theta12, M0, M1, M_gluing_1, e4, False)
-		self.gluing_isogeny_chain2=KaniGluingIsogenyChainDim4Half(points_m, a1, a2, q, m, Theta12, M0, M2, M_gluing_2, e4, True)
-
-		# Full isogeny chains
+		# F1
+		if verbose:
+			print("Computing F1:")
+		self.gluing_isogeny_chain1=KaniGluingIsogenyChainDim4Half(points_m, a1, a2, q, m, Theta12, M0, M1, M_gluing_1, e4, dual=False, verbose=verbose)
+		
 		lamb1=inverse_mod(q,2**(e1+2))
-		lamb2=inverse_mod(q,2**(e2+2))
 		B_Kpp1=kernel_basis(M1,e1,P1_doubles[f-e1-2],Q1_doubles[f-e1-2],R2_doubles[f-e1-2],lamb1*S2_doubles[f-e1-2])
+		
+		self.F1=IsogenyChainDim4(B_Kpp1, self.gluing_isogeny_chain1, e1, m, splitting=False, strategy=strategy1,verbose=verbose)
+
+		# F2_dual
+		if verbose:
+			print("\nComputing (the dual of) F2:")
+		self.gluing_isogeny_chain2=KaniGluingIsogenyChainDim4Half(points_m, a1, a2, q, m, Theta12, M0, M2, M_gluing_2, e4, dual=True, verbose=verbose)
+		
+		lamb2=inverse_mod(q,2**(e2+2))
 		B_Kpp2=kernel_basis(M2,e2,P1_doubles[f-e2-2],Q1_doubles[f-e2-2],R2_doubles[f-e2-2],lamb2*S2_doubles[f-e2-2])
 
-		self.F1=IsogenyChainDim4(B_Kpp1, self.gluing_isogeny_chain1, e1, m, splitting=False, strategy=strategy1)
-		self.F2_dual=IsogenyChainDim4(B_Kpp2, self.gluing_isogeny_chain2, e2, m, splitting=False, strategy=strategy2)
+		self.F2_dual=IsogenyChainDim4(B_Kpp2, self.gluing_isogeny_chain2, e2, m, splitting=False, strategy=strategy2,verbose=verbose)
 
+		if verbose:
+			print("\nAre the codomains of F1 and of the dual F2 matching?")
+			print(proj_equal(self.F1._isogenies[-1]._codomain.null_point().coords(),hadamard(self.F2_dual._isogenies[-1]._codomain.null_point().coords())))
+
+		# F2
+		if verbose:
+			print("\nDualising the dual of F2.\n")
 		self.F2=self.F2_dual.dual()
 
 	def evaluate(self,P):

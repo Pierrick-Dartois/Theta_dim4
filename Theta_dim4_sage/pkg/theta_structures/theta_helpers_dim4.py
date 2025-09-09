@@ -254,6 +254,20 @@ def find_translates(L_ind_zeros):
 			L_ind_origin.remove(x)
 	return L_trans
 
-
+def proj_equal(P1, P2):
+    if len(P1) != len(P2):
+        return False
+    for i in range(0, len(P1)):
+        if P1[i]==0:
+            if P2[i] != 0:
+                return False
+        else:
+            break
+    r=P1[i]
+    s=P2[i]
+    for i in range(0, len(P1)):
+        if P1[i]*s != P2[i]*r:
+            return False
+    return True
 
 

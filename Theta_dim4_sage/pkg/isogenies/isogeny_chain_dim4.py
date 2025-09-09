@@ -4,7 +4,7 @@ from ..isogenies.isogeny_dim4 import IsogenyDim4
 
 
 class IsogenyChainDim4:
-	def __init__(self, B_K, first_isogenies, e, m, splitting=True, strategy = None):
+	def __init__(self, B_K, first_isogenies, e, m, splitting=True, strategy = None, verbose = False):
 		self.e=e
 		self.m=m
 
@@ -12,7 +12,7 @@ class IsogenyChainDim4:
 			strategy = self.get_strategy(splitting)
 		self.strategy = strategy
 
-		self._isogenies=self.isogeny_chain(B_K, first_isogenies)
+		self._isogenies=self.isogeny_chain(B_K, first_isogenies, verbose = verbose)
 
 
 	def get_strategy(self,splitting):
@@ -22,7 +22,7 @@ class IsogenyChainDim4:
 		#else:
 		return precompute_strategy_with_first_eval(self.e,self.m,M=1,S=0.8,I=100)
 
-	def isogeny_chain(self, B_K, first_isogenies):
+	def isogeny_chain(self, B_K, first_isogenies, verbose = False):
 		"""
 		Compute the isogeny chain and store intermediate isogenies for evaluation
 		"""
@@ -59,6 +59,8 @@ class IsogenyChainDim4:
 			if k==0:
 				phi = first_isogenies
 			else:
+				if verbose:
+					print("Computing f_{}: B_{} --> B_{}".format(k+self.m+1,k+self.m,k+self.m+1))
 				phi = IsogenyDim4(Th,ker)
 
 			# Update the chain of isogenies

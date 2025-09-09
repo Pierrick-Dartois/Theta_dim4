@@ -408,7 +408,7 @@ class KaniGluingIsogenyChainDim4:
 		return self.evaluate(P)
 
 class KaniGluingIsogenyChainDim4Half:
-	def __init__(self, points_m, a1, a2, q, m, Theta12, M_product_dim2, M_start_dim4, M_gluing_dim4, e4, dual=False,strategy_dim2=None):#points_m,points_4,a1,a2,q,m,precomputed_data=None,dual=False,strategy_dim2=None):
+	def __init__(self, points_m, a1, a2, q, m, Theta12, M_product_dim2, M_start_dim4, M_gluing_dim4, e4, dual=False,strategy_dim2=None,verbose=False):#points_m,points_4,a1,a2,q,m,precomputed_data=None,dual=False,strategy_dim2=None):
 		r"""
 
 		INPUT: 
@@ -437,6 +437,9 @@ class KaniGluingIsogenyChainDim4Half:
 
 		self.e4=e4
 
+		if verbose:
+			print("Computing 2-dimensional change of theta coordinates.")
+
 		# Gluing base change in dimension 2
 		if not dual:
 			M1=gluing_base_change_matrix_dim2_F1(a1,a2,q)
@@ -452,12 +455,6 @@ class KaniGluingIsogenyChainDim4Half:
 		N_dim2=base_change_theta_dim2(M10,e4)
 		#N_dim2=montgomery_to_theta_matrix_dim2(Theta12.zero().coords(),N1)
 
-		# Gluing base change in dimension 4
-
-		self.M_gluing_dim4 = M_gluing_dim4
-
-		self.N_dim4 = base_change_theta_dim4(M_gluing_dim4, e4)
-
 		# Kernel of the 2**m-isogeny chain in dimension 2
 		a1_red=a1%(2**(m+2))
 		a2_red=a2%(2**(m+2))
@@ -467,7 +464,17 @@ class KaniGluingIsogenyChainDim4Half:
 			B_K_dim2=[TuplePoint(2*a1_red*P1_m+2*a2_red*Q1_m,-2*R2_m),TuplePoint(2*a1_red*Q1_m-2*a2_red*P1_m,-2*S2_m)]
 
 		# Computation of the 2**m-isogeny chain in dimension 2
+		if verbose:
+			print("Computing the 2-dimensional isogeny chain E_1 x E_2 --> A_1 --> ... --> A_m.")
 		self._isogenies_dim2=IsogenyChainDim2(B_K_dim2,Theta12,N_dim2,m,strategy_dim2)
+
+		# Gluing base change in dimension 4
+		if verbose:
+			print("Computing 4-dimensional change of theta coordinates.")
+
+		self.M_gluing_dim4 = M_gluing_dim4
+
+		self.N_dim4 = base_change_theta_dim4(M_gluing_dim4, e4)
 
 		# Kernel of the (m+1)-th isogeny in dimension 4 f_{m+1}: A_m^2 --> B (gluing isogeny)
 		lamb=inverse_mod(q,2**(m+3))
@@ -487,6 +494,8 @@ class KaniGluingIsogenyChainDim4Half:
 		L_K_dim4=[self.domain_base_change.base_change_coords(self.N_dim4,L_K_dim4[k]) for k in range(5)]
 
 		# Computing the gluing isogeny in dimension 4
+		if verbose:
+			print("Computing the 4-dimensional gluing A_m x A_m --> B_(m+1).")
 		self._gluing_isogeny_dim4=GluingIsogenyDim4(self.domain_base_change,L_K_dim4,[(1,0,0,0),(0,1,0,0),(0,0,1,0),(0,0,0,1),(1,1,0,0)])
 
 		# Translates for the evaluation of the gluing isogeny in dimension 4

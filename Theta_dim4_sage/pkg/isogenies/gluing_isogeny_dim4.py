@@ -1,25 +1,9 @@
 from sage.all import *
 
 from ..theta_structures.Theta_dim4 import ThetaStructureDim4, ThetaPointDim4
-from ..theta_structures.theta_helpers_dim4 import hadamard, squared, batch_inversion, multindex_to_index
+from ..theta_structures.theta_helpers_dim4 import hadamard, squared, batch_inversion, multindex_to_index, proj_equal
 from ..isogenies.tree import Tree
 from ..isogenies.isogeny_dim4 import IsogenyDim4, DualIsogenyDim4
-
-def proj_equal(P1, P2):
-    if len(P1) != len(P2):
-        return False
-    for i in range(0, len(P1)):
-        if P1[i]==0:
-            if P2[i] != 0:
-                return False
-        else:
-            break
-    r=P1[i]
-    s=P2[i]
-    for i in range(0, len(P1)):
-        if P1[i]*s != P2[i]*r:
-            return False
-    return True
 
 class GluingIsogenyDim4(IsogenyDim4):
 	def __init__(self,domain,L_K_8,L_K_8_ind, coerce=None):

@@ -265,8 +265,9 @@ xDBL_A24(ec_point_t *Q, const ec_point_t *P, const ec_point_t *A24, const bool A
     field_sub(&t1, &P->x, &P->z);
     field_sqr(&t1, &t1);
     field_sub(&t2, &t0, &t1);
-    if (!A24_normalized)
+    if (!A24_normalized) {
         field_mul(&t1, &t1, &A24->z);
+    }
     field_mul(&Q->x, &t0, &t1);
     field_mul(&t0, &t2, &A24->x);
     field_add(&t0, &t0, &t1);
@@ -727,4 +728,70 @@ ec_biscalar_mul(ec_point_t *res,
         }
         return xDBLMUL(res, &PQ->P, scalarP, &PQ->Q, scalarQ, &PQ->PmQ, kbits, (const ec_curve_t *)&E);
     }
+}
+
+void
+projective_difference_point(ec_point_t *PQ, const ec_point_t *P, const ec_point_t *Q, const ec_curve_t *curve)
+{
+    // Given P,Q in projective x-only, computes a deterministic choice for (P-Q)
+    // Based on Proposition 3 of https://eprint.iacr.org/2017/518.pdf
+
+    field_t Bxx, Bxz, Bzz, t0, t1;
+
+    field_mul(&t0, &P->x, &Q->x);
+    field_mul(&t1, &P->z, &Q->z);
+    field_sub(&Bxx, &t0, &t1);
+    field_sqr(&Bxx, &Bxx);
+    field_mul(&Bxx, &Bxx, &curve->C); // C*(P.x*Q.x-P.z*Q.z)^2
+    field_add(&Bxz, &t0, &t1);
+    field_mul(&t0, &P->x, &Q->z);
+    field_mul(&t1, &P->z, &Q->x);
+    field_add(&Bzz, &t0, &t1);
+    field_mul(&Bxz, &Bxz, &Bzz); // (P.x*Q.x+P.z*Q.z)(P.x*Q.z+P.z*Q.x)
+    field_sub(&Bzz, &t0, &t1);
+    field_sqr(&Bzz, &Bzz);
+    field_mul(&Bzz, &Bzz, &curve->C); // C*(P.x*Q.z-P.z*Q.x)^2
+    field_mul(&Bxz, &Bxz, &curve->C); // C*(P.x*Q.x+P.z*Q.z)(P.x*Q.z+P.z*Q.x)
+    field_mul(&t0, &t0, &t1);
+    field_mul(&t0, &t0, &curve->A);
+    field_add(&t0, &t0, &t0);
+    field_add(&Bxz, &Bxz, &t0); // C*(P.x*Q.x+P.z*Q.z)(P.x*Q.z+P.z*Q.x) + 2*A*P.x*Q.z*P.z*Q.x
+
+    // Normalization: our squareroot always has the same sign as long as P.z, Q.z, and C
+    // are in Fp and C is a square, so the B's should be scaled by C*C_bar^2*P.z_bar^2*Q.Z_bar^2
+#ifdef FP_ONLY
+    field_copy(&t0, &curve->C);
+#else
+    fp_copy(&t0.re, &curve->C.re);
+    fp_neg(&t0.im, &curve->C.im);
+#endif
+    field_sqr(&t0, &t0);
+    field_mul(&t0, &t0, &curve->C);
+#ifdef FP_ONLY
+    field_copy(&t1, &P->z);
+#else
+    fp_copy(&t1.re, &P->z.re);
+    fp_neg(&t1.im, &P->z.im);
+#endif
+    field_sqr(&t1, &t1);
+    field_mul(&t0, &t0, &t1);
+#ifdef FP_ONLY
+    fp_copy(&t1, &Q->z);
+#else
+    fp_copy(&t1.re, &Q->z.re);
+    fp_neg(&t1.im, &Q->z.im);
+#endif
+    field_sqr(&t1, &t1);
+    field_mul(&t0, &t0, &t1);
+    field_mul(&Bxx, &Bxx, &t0);
+    field_mul(&Bxz, &Bxz, &t0);
+    field_mul(&Bzz, &Bzz, &t0);
+
+    // Solving quadratic equation
+    field_sqr(&t0, &Bxz);
+    field_mul(&t1, &Bxx, &Bzz);
+    field_sub(&t0, &t0, &t1);
+    field_sqrt(&t0);
+    field_add(&PQ->x, &Bxz, &t0);
+    field_copy(&PQ->z, &Bzz);
 }

@@ -143,12 +143,21 @@ def SIDH_key_recovery_attack(params,pub_params,pubA,pubB,EAB=None):
 		strategy2=precompute_strategy_with_first_eval(f2,m,M=1,S=0.8,I=100)
 
 	t2=time()
-	print("Precomputations: {} s".format(t2-t1))
+	print("Parameters:")
+	print(" - a2 = {}".format(a2))
+	print(" - e = {}".format(e))
+	print(" - a1 = {}".format(a1))
+	print(" - a2 = {}".format(a2))
+	print(" - m = {}".format(m))
+
+	print("\nPrecomputations: {} s\n".format(t2-t1))
+
+	print("# Starting 4-dimensional computation #\n")
 
 	# Dimension 4 embedding of phipB=(psi*)phiB
-	F=KaniEndoHalf(PA,QA,phipB_PA,phipB_QA,q,a1,a2,e,e2,strategy1,strategy2)
+	F=KaniEndoHalf(PA,QA,phipB_PA,phipB_QA,q,a1,a2,e,e2,strategy1,strategy2,verbose=True)
 	t3=time()
-	print("Dimension 4 embedding: {} s".format(t3-t2))
+	print("Total dimension 4 embedding: {} s\n".format(t3-t2))
 
 
 	# Evaluation of phipB on E1[3**e3] to recover ker(phiB)
