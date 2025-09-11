@@ -144,7 +144,6 @@ def SIDH_key_recovery_attack(params,pub_params,pubA,pubB,EAB=None):
 
 	t2=time()
 	print("Parameters:")
-	print(" - a2 = {}".format(a2))
 	print(" - e = {}".format(e))
 	print(" - a1 = {}".format(a1))
 	print(" - a2 = {}".format(a2))
