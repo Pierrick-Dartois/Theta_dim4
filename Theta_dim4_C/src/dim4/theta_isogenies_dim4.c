@@ -38,6 +38,14 @@ static inline void signed_sum(field_t *res, const field_t *in,
   }
 }
 
+void fill_in_tree(tree_t *T, const theta_point_dim4_t *theta_ker_8_sq,
+                        const int *theta_index_to_kernel_index,
+                        const unsigned int len_ker_8) {
+  
+}
+
+/* Deprecated
+
 void fill_in_tree_deter(tree_t *T, const theta_point_dim4_t *theta_ker_8_sq,
                         const int *theta_index_to_kernel_index,
                         const unsigned int len_ker_8) {
@@ -79,6 +87,8 @@ void extract_tree_edges(field_t *num, field_t *den, unsigned int *children,
 }
 
 /* High level isogeny codomain computation functions */
+
+/* Deprecated
 
 static void isogeny_compute_dim4(theta_struct_dim4_t *codomain, tree_t *T,
                                  const theta_point_dim4_t *kernel_8,
@@ -127,6 +137,8 @@ void gen_isogeny_compute_dim4(theta_struct_dim4_t *codomain,
 
 /** Evaluation **/
 
+/* Deprecated
+
 void gen_isogeny_eval_dim4(theta_point_dim4_t *image,
                            const theta_point_dim4_t *point,
                            const theta_struct_dim4_t *codomain) {
@@ -144,6 +156,8 @@ void gen_isogeny_eval_dim4(theta_point_dim4_t *image,
 // support_fT[i] contains all indices j such that 
 // the permutation j --> (i+1)^j is the product
 // of the transpositions (j,(i+1)^j). 
+
+/* Deprecated
 const unsigned int support_fT[15][8] = {{0,2,4,6,8,10,12,14},
 {0,1,4,5,8,9,12,13},
 {0,1,4,5,8,9,12,13},
@@ -354,6 +368,8 @@ static void gluing_isogeny_special_eval_T1_dim4(
 
 */
 
+/* Deprecated
+
 void gluing_isogeny_surf_compute_dim4(gluing_isog_surf_dim4_t *isog, 
                                  const couple_theta_struct_dim2_t *domain, tree_t *tree,
                                  const couple_theta_point_dim2_t *kernel_8,
@@ -423,3 +439,5 @@ void gluing_isogeny_surf_eval_dim4(theta_point_dim4_t *image,
     field_mul(&image->coords[i],&image->coords[i],&isog->inv_fT[i]);
   }
 }
+
+*/
